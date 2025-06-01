@@ -1,0 +1,23 @@
+{
+  "development": {
+    "username": "amzz",
+    "password": "amzz34",
+    "database": "learning_management_dev",
+    "host": "127.0.0.1",
+    "dialect": "postgres"
+  },
+  "test": {
+    "username": "amzz",
+    "password": "amzz34",
+    "database": "learning_management_test",
+    "host": "127.0.0.1",
+    "dialect": "postgres"
+  },
+  "production": {
+    "username": "amzz",
+    "password": "amzz34",
+    "database": "learning_management_prod",
+    "host": "127.0.0.1",
+    "dialect": "postgres"
+  }
+}
