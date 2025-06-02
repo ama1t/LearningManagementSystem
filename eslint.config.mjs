@@ -17,7 +17,7 @@ export default defineConfig([
     languageOptions: { globals: globals.browser },
   },
   {
-    files: ["models/**/*.js", "migrations/**/*.js"],
+    files: ["models/**/*.js", "migrations/**/*.js", "__tests__/**/*.js"],
     rules: {
       "no-unused-vars": "off",
       "no-undef": "off",

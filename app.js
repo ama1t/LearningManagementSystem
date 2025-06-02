@@ -1,6 +1,6 @@
 const express = require("express");
 const app = express();
-const { Course, User } = require("./models");
+const { Course } = require("./models");
 
 app.use(express.json());
 
@@ -37,7 +37,7 @@ app.post("/courses", async (req, res) => {
       title,
       description,
       educatorId,
-      imageUrl
+      imageUrl,
     );
     return res.json(course);
   } catch (error) {
