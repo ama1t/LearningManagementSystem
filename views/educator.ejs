@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Learning Management System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-900 text-white font-sans">
+    <!-- Header -->
+    <header class="flex justify-between items-center p-6 bg-gray-800 shadow-md">
+      <div class="text-2xl font-bold text-purple-400">
+        Learning Management System
+      </div>
+      <div class="flex items-center gap-4">
+        <span class="text-sm">Welcome John Doe!</span>
+        <button class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md">
+          Signout
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Section -->
+    <main class="p-8 max-w-6xl mx-auto">
+      <!-- Admin Actions -->
+      <section class="mb-8">
+        <h2 class="text-xl font-semibold text-purple-300 mb-4">
+          Administrative Actions
+        </h2>
+        <div class="flex flex-col sm:flex-row gap-4">
+          <button class="bg-purple-700 hover:bg-purple-800 px-4 py-2 rounded-md"><a href="/create-course">Create a new course</a>
+            
+          </button>
+          <button class="bg-indigo-700 hover:bg-indigo-800 px-4 py-2 rounded-md">
+            <a href="/my-courses">View courses</a>
+          </button>
+          <button class="bg-cyan-700 hover:bg-cyan-800 px-4 py-2 rounded-md">
+            <a href="/reports">View reports</a>
+          </button>
+        </div>
+      </section>
+
+      <!-- Available Courses -->
+      <section>
+        <h2 class="text-xl font-semibold text-purple-300 mb-4">
+          Available Courses
+        </h2>
+
+        <% if (courses.length === 0) { %>
+          <p class="text-gray-400">No courses available</p>
+        <% } else { %>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <% courses.forEach(course => { %>
+              <div class="bg-gray-800 p-4 rounded-lg shadow hover:shadow-lg transition">
+                <!-- Thumbnail image -->
+                <img src="<%= course.imageUrl %>" alt="Course Thumbnail"
+                class="w-full h-40 object-cover rounded-md mb-4" />
+                <h3 class="text-lg font-semibold text-white mb-2">
+                  <%= course.name %>
+                </h3>
+                <p class="text-sm text-gray-300 mb-2">
+                  Instructor: <%= course.educatorId %>
+                </p>
+                <p class="text-sm text-gray-400 mb-4">
+                  👥  students
+                </p>
+                <div class="flex gap-2">
+                  <button class="bg-purple-600 hover:bg-purple-700 px-3 py-1 rounded-md">
+                    View Course
+                  </button>
+                  <button class="bg-green-600 hover:bg-green-700 px-3 py-1 rounded-md">
+                    Enroll
+                  </button>
+                </div>
+              </div>
+            <% }) %>
+          </div>
+        <% } %>
+
+      </section>
+    </main>
+  </body>
+</html>

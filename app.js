@@ -3,46 +3,27 @@ const app = express();
 const { Course } = require("./models");
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+app.set("view engine", "ejs");
 
 app.get("/", (req, res) => {
-  res.send("Welcome to the Course Management API");
+  res.render("index");
 });
 
-// app.post("/courses", async (req, res) => {
-//   try {
-//     //const { title, description, educatorId, imageUrl } = req.body;
-//     // Create course
-//     const course = await Course.createCourse({
-//       title: req.body.title,
-//       description: req.body.description,
-//       educatorId: req.body.educatorId,
-//       imageUrl: req.body.imageUrl,
-//     });
-//     return res.json(course);
-//   } catch (error) {
-//     console.error("Error creating course:", error);
-//     res.response.status(422).json(error);
-//   }
-// });
-
-app.post("/courses", async (req, res) => {
+app.post("/course", async (req, res) => {
   try {
     const { title, description, educatorId, imageUrl } = req.body;
 
     if (typeof title !== "string") {
-      return res.status(400).send("Title must be a string");
+      return res.redirect("/course-create");
     }
 
-    const course = await Course.createCourse(
-      title,
-      description,
-      educatorId,
-      imageUrl,
-    );
-    return res.json(course);
+    await Course.createCourse(title, description, educatorId, imageUrl);
+    return res.redirect("/educator");
   } catch (error) {
     console.error("Error creating course:", error);
-    res.status(422).json(error);
+    return res.redirect("/course-create");
   }
 });
 
@@ -62,10 +43,35 @@ app.get("/courses/:educatorId", async (req, res) => {
   }
 });
 
-app.get("/courses", async (req, res) => {
+app.get("/educator", async (req, res) => {
+  // try {
+  const courses = await Course.getAllCourses();
+  if (req.accepts("html")) {
+    return res.render("educator.ejs", { courses });
+  } else res.json(courses);
+
+  // } catch (error) {
+  //   console.error("Error fetching courses:", error);
+  //   res.status(500).json({ error: "Internal server error" });
+  // }
+});
+
+app.get("/create-course", (req, res) => {
+  if (req.accepts("html")) {
+    return res.render("createCourses.ejs");
+  } else {
+    return res.status(400).json({ error: "Invalid request format" });
+  }
+});
+
+app.get("/my-courses", async (req, res) => {
   try {
     const courses = await Course.getAllCourses();
-    return res.json(courses);
+    if (req.accepts("html")) {
+      return res.render("educatorCourses.ejs", { courses });
+    } else {
+      return res.json(courses);
+    }
   } catch (error) {
     console.error("Error fetching courses:", error);
     res.status(500).json({ error: "Internal server error" });
