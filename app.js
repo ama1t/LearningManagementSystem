@@ -11,6 +11,22 @@ app.get("/", (req, res) => {
   res.render("index");
 });
 
+app.get("/signup", (req, res) => {
+  if (req.accepts("html")) {
+    return res.render("signup.ejs");
+  } else {
+    return res.status(400).json({ error: "Invalid request format" });
+  }
+});
+
+app.get("/signin", (req, res) => {
+  if (req.accepts("html")) {
+    return res.render("signin.ejs");
+  } else {
+    return res.status(400).json({ error: "Invalid request format" });
+  }
+});
+
 app.post("/course", async (req, res) => {
   try {
     const { title, description, educatorId, imageUrl } = req.body;
