@@ -122,6 +122,17 @@ app.post(
   },
 );
 
+app.get("/signout", (req, res) => {
+  req.logout((err) => {
+    if (err) {
+      console.error("Error during logout:", err);
+      return res.status(500).send("Internal server error");
+    }
+    console.log("User logged out successfully");
+    res.redirect("/");
+  });
+});
+
 app.post("/course", connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
   try {
     const { title, description, educatorId, imageUrl } = req.body;
