@@ -32,6 +32,7 @@
         method="POST"
         class="bg-gray-800 p-6 rounded-lg shadow space-y-4"
       >
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
         <!-- Title -->
         <div>
           <label for="title" class="block text-sm mb-1">Course Title</label>

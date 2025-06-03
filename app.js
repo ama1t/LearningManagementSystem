@@ -1,9 +1,62 @@
 const express = require("express");
 const app = express();
-const { Course } = require("./models");
+const { Course, User } = require("./models");
+var csrf = require("tiny-csrf");
+var cookieParser = require("cookie-parser");
+
+const passport = require("passport");
+const connectEnsureLogin = require("connect-ensure-login");
+const session = require("express-session");
+const LocalStrategy = require("passport-local");
+const bcrypt = require("bcrypt");
+const saltRounds = 10;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser("your secret here"));
+app.use(csrf("123456789iamasecret987654321look", ["POST", "PUT", "DELETE"]));
+//const path = require("path");
+
+app.use(
+  session({
+    secret: "your secret here",
+    cookie: { maxAge: 24 * 60 * 60 * 1000 }, // 1 day
+  }),
+);
+app.use(passport.initialize());
+app.use(passport.session());
+
+passport.use(
+  new LocalStrategy(
+    {
+      usernameField: "email",
+      passwordField: "password",
+    },
+    async (email, password, done) => {
+      await User.findOne({ where: { email: email, password: password } })
+        .then((user) => {
+          done(null, user);
+        })
+        .catch((error) => {
+          return error;
+        });
+    },
+  ),
+);
+
+passport.serializeUser((user, done) => {
+  done(null, user.id);
+});
+
+passport.deserializeUser(async (id, done) => {
+  User.findByPk(id)
+    .then((user) => {
+      done(null, user);
+    })
+    .catch((error) => {
+      done(error, null);
+    });
+});
 
 app.set("view engine", "ejs");
 
@@ -13,9 +66,38 @@ app.get("/", (req, res) => {
 
 app.get("/signup", (req, res) => {
   if (req.accepts("html")) {
-    return res.render("signup.ejs");
+    return res.render("signup.ejs", {
+      title: "Sign Up",
+      csrfToken: req.csrfToken(),
+    });
   } else {
     return res.status(400).json({ error: "Invalid request format" });
+  }
+});
+
+app.post("/users", async (req, res) => {
+  const hashpwd = await bcrypt.hash(req.body.password, saltRounds);
+  try {
+    const user = await User.create({
+      name: req.body.name,
+      email: req.body.email,
+      password: hashpwd,
+      role: req.body.role,
+    });
+    req.login(user, (err) => {
+      if (err) {
+        console.log(err);
+      }
+      console.log(req.body.role);
+      if (req.body.role == "educator") {
+        res.redirect("/educator");
+      }
+      if (req.body.role == "student") {
+        res.redirect("/student");
+      }
+    });
+  } catch (error) {
+    console.log(error);
   }
 });
 
@@ -27,7 +109,7 @@ app.get("/signin", (req, res) => {
   }
 });
 
-app.post("/course", async (req, res) => {
+app.post("/course", connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
   try {
     const { title, description, educatorId, imageUrl } = req.body;
 
@@ -84,7 +166,9 @@ app.get("/my-courses", async (req, res) => {
   try {
     const courses = await Course.getAllCourses();
     if (req.accepts("html")) {
-      return res.render("educatorCourses.ejs", { courses });
+      return res.render("educatorCourses.ejs", {
+        courses,
+      });
     } else {
       return res.json(courses);
     }
