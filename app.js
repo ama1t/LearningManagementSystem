@@ -174,7 +174,7 @@ app.get(
   connectEnsureLogin.ensureLoggedIn(),
   async (req, res) => {
     try {
-      const courses = await Course.getAllCourses();
+      const courses = await Course.findByEducatorId(req.user.id);
       if (req.accepts("html")) {
         return res.render("educatorCourses.ejs", {
           courses,
@@ -184,6 +184,21 @@ app.get(
       }
     } catch (error) {
       console.error("Error fetching courses:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  },
+);
+
+app.post(
+  "/addcourse",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (req, res) => {
+    const { title, description, imageUrl } = req.body;
+    try {
+      await Course.createCourse(title, description, imageUrl, req.user.id);
+      res.redirect("/my-courses");
+    } catch (error) {
+      console.error("Error creating course:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   },

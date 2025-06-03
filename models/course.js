@@ -21,7 +21,7 @@ module.exports = (sequelize, DataTypes) => {
         where: { id: courseId },
       });
     }
-    static async createCourse(title, description, educatorId, imageUrl) {
+    static async createCourse(title, description, imageUrl, educatorId) {
       return await this.create({
         title: title,
         description: description,
