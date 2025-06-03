@@ -1,6 +1,6 @@
 const express = require("express");
 const app = express();
-const { Course, User } = require("./models");
+const { Course, User, Chapter } = require("./models");
 var csrf = require("tiny-csrf");
 var cookieParser = require("cookie-parser");
 
@@ -158,7 +158,23 @@ app.get("/dashboard", connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
   }
 });
 
-app.get("/create-course", connectEnsureLogin.ensureLoggedIn(), (req, res) => {
+app.get("/course", connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
+  try {
+    const courses = await Course.findByEducatorId(req.user.id);
+    if (req.accepts("html")) {
+      return res.render("educatorCourses.ejs", {
+        courses,
+      });
+    } else {
+      return res.json(courses);
+    }
+  } catch (error) {
+    console.error("Error fetching courses:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+app.get("/course/create", connectEnsureLogin.ensureLoggedIn(), (req, res) => {
   if (req.accepts("html")) {
     return res.render("createCourses.ejs", {
       title: "Create Course",
@@ -169,39 +185,62 @@ app.get("/create-course", connectEnsureLogin.ensureLoggedIn(), (req, res) => {
   }
 });
 
-app.get(
-  "/my-courses",
-  connectEnsureLogin.ensureLoggedIn(),
-  async (req, res) => {
-    try {
-      const courses = await Course.findByEducatorId(req.user.id);
-      if (req.accepts("html")) {
-        return res.render("educatorCourses.ejs", {
-          courses,
-        });
-      } else {
-        return res.json(courses);
-      }
-    } catch (error) {
-      console.error("Error fetching courses:", error);
-      res.status(500).json({ error: "Internal server error" });
-    }
-  },
-);
-
 app.post(
-  "/addcourse",
+  "/course/create",
   connectEnsureLogin.ensureLoggedIn(),
   async (req, res) => {
     const { title, description, imageUrl } = req.body;
     try {
-      await Course.createCourse(title, description, imageUrl, req.user.id);
-      res.redirect("/my-courses");
+      const course = await Course.createCourse(
+        title,
+        description,
+        imageUrl,
+        req.user.id,
+      );
+
+      // Redirect to chapter management page of the new course
+      return res.redirect(`/course/${course.id}`);
     } catch (error) {
       console.error("Error creating course:", error);
-      res.status(500).json({ error: "Internal server error" });
+      return res.status(500).json({ error: "Internal server error" });
     }
   },
 );
+
+app.get("/course/:courseId", async (req, res) => {
+  const courseId = req.params.courseId;
+  try {
+    const chapters = await Chapter.getByCourseId(courseId);
+    return res.render("educhapter.ejs", {
+      title: "Manage Chapters",
+      chapters: chapters,
+      courseId: courseId, // helpful if you need it in the UI
+    });
+  } catch (error) {
+    console.error("Error fetching chapters:", error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+app.get("/course/:courseId/chapter/create", (req, res) => {
+  const courseId = req.params.courseId;
+  res.render("createChapter.ejs", {
+    title: "Create Chapter",
+    csrfToken: req.csrfToken(),
+    courseId,
+  });
+});
+
+app.post("/course/:courseId/chapter/create", async (req, res) => {
+  const { title, description } = req.body;
+  const courseId = req.params.courseId;
+  try {
+    await Chapter.createChapter(title, description, courseId);
+    res.redirect(`/course/${courseId}`);
+  } catch (err) {
+    console.error("Error creating chapter:", err);
+    res.status(500).send("Failed to create chapter");
+  }
+});
 
 module.exports = app;

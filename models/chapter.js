@@ -14,6 +14,21 @@ module.exports = (sequelize, DataTypes) => {
         as: "course",
       });
     }
+    static async getallChapters() {
+      return await this.findAll();
+    }
+    static async getByCourseId(courseId) {
+      return await this.findAll({
+        where: { courseId },
+      });
+    }
+    static async createChapter(title, description, courseId) {
+      return await this.create({
+        title: title,
+        description: description,
+        courseId: courseId,
+      });
+    }
   }
   Chapter.init(
     {
