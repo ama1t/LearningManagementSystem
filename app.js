@@ -66,7 +66,13 @@ passport.deserializeUser(async (id, done) => {
 app.set("view engine", "ejs");
 
 app.get("/", (req, res) => {
-  res.render("index");
+  if (req.isAuthenticated()) {
+    return res.redirect("/dashboard");
+  }
+  res.render("index", {
+    title: "Todo Application",
+    csrfToken: req.csrfToken(),
+  });
 });
 
 app.get("/signup", (req, res) => {
@@ -101,10 +107,10 @@ app.post("/users", async (req, res) => {
   }
 });
 
-app.get("/signin", (req, res) => {
+app.get("/login", (req, res) => {
   if (req.accepts("html")) {
-    return res.render("signin.ejs", {
-      title: "Sign In",
+    return res.render("login.ejs", {
+      title: "Log In",
       csrfToken: req.csrfToken(),
     });
   } else {
@@ -114,7 +120,7 @@ app.get("/signin", (req, res) => {
 
 app.post(
   "/session",
-  passport.authenticate("local", { failureRedirect: "/signin" }),
+  passport.authenticate("local", { failureRedirect: "/login" }),
   (req, res) => {
     console.log("User authenticated successfully");
     console.log(req.user.role);
@@ -133,76 +139,7 @@ app.get("/signout", (req, res) => {
   });
 });
 
-app.post("/course", connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
-  try {
-    const { title, description, educatorId, imageUrl } = req.body;
-
-    if (typeof title !== "string") {
-      return res.redirect("/course-create");
-    }
-
-    await Course.createCourse(title, description, educatorId, imageUrl);
-    return res.redirect("/educator");
-  } catch (error) {
-    console.error("Error creating course:", error);
-    return res.redirect("/course-create");
-  }
-});
-
-app.get("/courses/:educatorId", async (req, res) => {
-  const educatorId = req.params.educatorId;
-  try {
-    const courses = await Course.findByEducatorId(educatorId);
-    if (courses.length === 0) {
-      return res
-        .status(404)
-        .json({ error: "No courses found for this educator" });
-    }
-    return res.json(courses);
-  } catch (error) {
-    console.error("Error fetching courses by educator ID:", error);
-    res.status(500).json({ error: "Internal server error" });
-  }
-});
-
-// app.get("/educator", async (req, res) => {
-// try {
-// const courses = await Course.getAllCourses();
-// if (req.accepts("html")) {
-//   return res.render("educator.ejs", { courses });
-// } else res.json(courses);
-
-// } catch (error) {
-//   console.error("Error fetching courses:", error);
-//   res.status(500).json({ error: "Internal server error" });
-// }
-// });
-
-app.get("/create-course", (req, res) => {
-  if (req.accepts("html")) {
-    return res.render("createCourses.ejs");
-  } else {
-    return res.status(400).json({ error: "Invalid request format" });
-  }
-});
-
-app.get("/my-courses", async (req, res) => {
-  try {
-    const courses = await Course.getAllCourses();
-    if (req.accepts("html")) {
-      return res.render("educatorCourses.ejs", {
-        courses,
-      });
-    } else {
-      return res.json(courses);
-    }
-  } catch (error) {
-    console.error("Error fetching courses:", error);
-    res.status(500).json({ error: "Internal server error" });
-  }
-});
-
-app.get("/dashboard", async (req, res) => {
+app.get("/dashboard", connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
   try {
     const courses = await Course.getAllCourses();
     if (req.accepts("html")) {
@@ -220,5 +157,36 @@ app.get("/dashboard", async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
+
+app.get("/create-course", connectEnsureLogin.ensureLoggedIn(), (req, res) => {
+  if (req.accepts("html")) {
+    return res.render("createCourses.ejs", {
+      title: "Create Course",
+      csrfToken: req.csrfToken(),
+    });
+  } else {
+    return res.status(400).json({ error: "Invalid request format" });
+  }
+});
+
+app.get(
+  "/my-courses",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (req, res) => {
+    try {
+      const courses = await Course.getAllCourses();
+      if (req.accepts("html")) {
+        return res.render("educatorCourses.ejs", {
+          courses,
+        });
+      } else {
+        return res.json(courses);
+      }
+    } catch (error) {
+      console.error("Error fetching courses:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  },
+);
 
 module.exports = app;
