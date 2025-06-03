@@ -33,12 +33,17 @@ passport.use(
       passwordField: "password",
     },
     async (email, password, done) => {
-      await User.findOne({ where: { email: email, password: password } })
-        .then((user) => {
-          done(null, user);
+      await User.findOne({ where: { email: email } })
+        .then(async (user) => {
+          const result = await bcrypt.compare(password, user.password);
+          if (result) {
+            return done(null, user);
+          } else {
+            return done(null, false, { message: "Invalid email or password" });
+          }
         })
         .catch((error) => {
-          return error;
+          return done(error);
         });
     },
   ),
@@ -89,12 +94,7 @@ app.post("/users", async (req, res) => {
         console.log(err);
       }
       console.log(req.body.role);
-      if (req.body.role == "educator") {
-        res.redirect("/educator");
-      }
-      if (req.body.role == "student") {
-        res.redirect("/student");
-      }
+      res.redirect("/dashboard");
     });
   } catch (error) {
     console.log(error);
@@ -103,11 +103,24 @@ app.post("/users", async (req, res) => {
 
 app.get("/signin", (req, res) => {
   if (req.accepts("html")) {
-    return res.render("signin.ejs");
+    return res.render("signin.ejs", {
+      title: "Sign In",
+      csrfToken: req.csrfToken(),
+    });
   } else {
     return res.status(400).json({ error: "Invalid request format" });
   }
 });
+
+app.post(
+  "/session",
+  passport.authenticate("local", { failureRedirect: "/signin" }),
+  (req, res) => {
+    console.log("User authenticated successfully");
+    console.log(req.user.role);
+    res.redirect("/dashboard");
+  },
+);
 
 app.post("/course", connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
   try {
@@ -141,18 +154,18 @@ app.get("/courses/:educatorId", async (req, res) => {
   }
 });
 
-app.get("/educator", async (req, res) => {
-  // try {
-  const courses = await Course.getAllCourses();
-  if (req.accepts("html")) {
-    return res.render("educator.ejs", { courses });
-  } else res.json(courses);
+// app.get("/educator", async (req, res) => {
+// try {
+// const courses = await Course.getAllCourses();
+// if (req.accepts("html")) {
+//   return res.render("educator.ejs", { courses });
+// } else res.json(courses);
 
-  // } catch (error) {
-  //   console.error("Error fetching courses:", error);
-  //   res.status(500).json({ error: "Internal server error" });
-  // }
-});
+// } catch (error) {
+//   console.error("Error fetching courses:", error);
+//   res.status(500).json({ error: "Internal server error" });
+// }
+// });
 
 app.get("/create-course", (req, res) => {
   if (req.accepts("html")) {
@@ -178,11 +191,16 @@ app.get("/my-courses", async (req, res) => {
   }
 });
 
-app.get("/student", async (req, res) => {
+app.get("/dashboard", async (req, res) => {
   try {
     const courses = await Course.getAllCourses();
     if (req.accepts("html")) {
-      return res.render("student.ejs", { courses });
+      if (req.user && req.user.role === "educator") {
+        return res.render("educator.ejs", { courses });
+      }
+      if (req.user && req.user.role === "student") {
+        return res.render("student.ejs", { courses });
+      }
     } else {
       return res.json(courses);
     }

@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="csrf-token" content="<%= csrfToken %>" />
     <title>Sign In</title>
     <script src="https://cdn.tailwindcss.com"></script>
   </head>
@@ -11,7 +12,8 @@
       <h2 class="text-2xl font-bold text-center mb-6 text-purple-500">
         Sign In to Your Account
       </h2>
-      <form action="/signin" method="POST" class="space-y-4">
+      <form action="/session" method="POST" class="space-y-4">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
         <input
           type="email"
           name="email"
