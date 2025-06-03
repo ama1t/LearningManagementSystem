@@ -9,6 +9,14 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      this.belongsTo(models.User, {
+        foreignKey: "educatorId",
+        as: "educator",
+      });
+      this.hasMany(models.Enrollment, {
+        foreignKey: "courseId",
+        as: "enrollments",
+      });
     }
 
     static async findByEducatorId(educatorId) {
