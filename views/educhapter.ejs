@@ -26,15 +26,15 @@
                   <div>
                     <h2 class="text-lg font-semibold text-white">
                       <span class="text-white font-bold mr-2">L<%= index + 1 %>:</span>
-                      <a href="course/<%= courseId %>/chapter/<%= chapter.id %>/pages" class="hover:underline hover:text-indigo-600">
+                      <a href="/course/<%= courseId %>/chapter/<%= chapter.id %>" class="hover:underline hover:text-indigo-600">
                         <%= chapter.title %>
                       </a>
                     </h2>
                     <p class="text-sm text-gray-300"><%= chapter.description %></p>
                   </div>
                   <div class="flex gap-2">
-                    <a href="/chapter/edit/<%= chapter.id %>" class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded-md text-sm">Edit</a>
-                    <form action="/chapter/delete/<%= chapter.id %>" method="POST">
+                    <a href="/course/<%= courseId %>/chapter/edit/<%= chapter.id %>" class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded-md text-sm">Edit</a>
+                    <form action="/course/<%= courseId %>/chapter/delete/<%= chapter.id %>" method="POST">
                       <button type="submit" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-md text-sm">Delete</button>
                     </form>
                   </div>

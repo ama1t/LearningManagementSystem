@@ -1,6 +1,6 @@
 const express = require("express");
 const app = express();
-const { Course, User, Chapter } = require("./models");
+const { Course, User, Chapter, Page } = require("./models");
 var csrf = require("tiny-csrf");
 var cookieParser = require("cookie-parser");
 
@@ -254,6 +254,83 @@ app.post(
     } catch (err) {
       console.error("Error creating chapter:", err);
       res.status(500).send("Failed to create chapter");
+    }
+  },
+);
+
+app.get(
+  "/course/:courseId/chapter/:chapterId",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (req, res) => {
+    try {
+      const { courseId, chapterId } = req.params;
+      const chapter = await Chapter.findById(chapterId);
+      const pages = await Page.getPagesByChapterId(chapterId);
+      res.render("edupages.ejs", {
+        pages,
+        chapter,
+        courseId,
+        csrfToken: req.csrfToken(),
+      });
+    } catch (error) {
+      console.error("Error fetching chapter or pages:", error);
+      res.status(500).send("Internal server error");
+    }
+  },
+);
+
+app.get(
+  "/course/:courseId/chapter/:chapterId/page/create",
+  connectEnsureLogin.ensureLoggedIn(),
+  (req, res) => {
+    const { courseId, chapterId } = req.params;
+    res.render("createPages.ejs", {
+      title: "Create Page",
+      csrfToken: req.csrfToken(),
+      courseId,
+      chapterId,
+    });
+  },
+);
+app.post(
+  "/course/:courseId/chapter/:chapterId/page/create",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (req, res) => {
+    const { title, content } = req.body;
+    const { courseId, chapterId } = req.params;
+    try {
+      await Page.create({
+        title,
+        content,
+        chapterId,
+      });
+      res.redirect(`/course/${courseId}/chapter/${chapterId}`);
+    } catch (err) {
+      console.error("Error creating page:", err);
+      res.status(500).send("Failed to create page");
+    }
+  },
+);
+
+app.get(
+  "/course/:courseId/chapter/:chapterId/page/:pageId",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (req, res) => {
+    const { courseId, chapterId, pageId } = req.params;
+    try {
+      const page = await Page.findById(pageId);
+      if (!page) {
+        return res.status(404).send("Page not found");
+      }
+      res.render("eduviewpage.ejs", {
+        page,
+        courseId,
+        chapterId,
+        csrfToken: req.csrfToken(),
+      });
+    } catch (error) {
+      console.error("Error fetching page:", error);
+      res.status(500).send("Internal server error");
     }
   },
 );

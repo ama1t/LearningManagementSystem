@@ -14,6 +14,19 @@ module.exports = (sequelize, DataTypes) => {
         as: "chapter",
       });
     }
+    static async getAllPages() {
+      return await this.findAll();
+    }
+    static async getPagesByChapterId(chapterId) {
+      return await this.findAll({
+        where: { chapterId },
+      });
+    }
+    static async findById(pageId) {
+      return await this.findOne({
+        where: { id: pageId },
+      });
+    }
   }
   Page.init(
     {

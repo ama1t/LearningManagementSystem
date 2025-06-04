@@ -33,6 +33,11 @@ module.exports = (sequelize, DataTypes) => {
         courseId: courseId,
       });
     }
+    static async findById(chapterId) {
+      return await this.findOne({
+        where: { id: chapterId },
+      });
+    }
   }
   Chapter.init(
     {

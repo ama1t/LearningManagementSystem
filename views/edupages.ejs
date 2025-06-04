@@ -25,16 +25,14 @@
                 <li class="bg-gray-700 p-4 rounded-xl shadow flex justify-between items-center">
                   <div>
                     <h2 class="text-lg font-semibold text-white">
-                      <span class="text-white font-bold mr-2">L<%= index + 1 %>:</span>
-                      <a href="/chapter/<%= chapter.id %>/pages" class="hover:underline hover:text-indigo-600">
+                      <a href="/course/<%= courseId %>/chapter/<%= chapter.id %>/page/<%= page.id %>" class="hover:underline hover:text-indigo-600">
                         <%= page.title %>
                       </a>
                     </h2>
-                    <p class="text-sm text-gray-300"><%= page.description %></p>
                   </div>
                   <div class="flex gap-2">
-                    <a href="/chapter/edit/<%= chapter.id %>" class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded-md text-sm">Edit</a>
-                    <form action="/chapter/delete/<%= chapter.id %>" method="POST">
+                    <a href="/course/<%= courseId %>/chapter/<%= chapter.id %>/page/edit/<%= page.id %>" class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded-md text-sm">Edit</a>
+                    <form action="/course/<%= courseId %>/chapter/<%= chapter.id %>/page/delete/<%= page.id %>" method="POST">
                       <button type="submit" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-md text-sm">Delete</button>
                     </form>
                   </div>
@@ -45,10 +43,10 @@
           
       </div>
       <a
-        href="/course/<%= courseId %>/chapter/create"
+        href="/course/<%= courseId %>/chapter/<%= chapter.id %>/page/create"
         class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl shadow"
       >
-        Add New Chapter
+        Add New Page
       </a>
 
     </div>
