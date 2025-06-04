@@ -13,11 +13,15 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: "courseId",
         as: "course",
       });
+      this.hasMany(models.Page, {
+        foreignKey: "chapterId",
+        as: "pages",
+      });
     }
     static async getallChapters() {
       return await this.findAll();
     }
-    static async getByCourseId(courseId) {
+    static async getChapterByCourseId(courseId) {
       return await this.findAll({
         where: { courseId },
       });

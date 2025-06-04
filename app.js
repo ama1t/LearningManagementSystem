@@ -207,40 +207,55 @@ app.post(
   },
 );
 
-app.get("/course/:courseId", async (req, res) => {
-  const courseId = req.params.courseId;
-  try {
-    const chapters = await Chapter.getByCourseId(courseId);
-    return res.render("educhapter.ejs", {
-      title: "Manage Chapters",
-      chapters: chapters,
-      courseId: courseId, // helpful if you need it in the UI
+app.get(
+  "/course/:courseId",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (req, res) => {
+    const courseId = req.params.courseId;
+
+    try {
+      const chapters = await Chapter.getChapterByCourseId(courseId);
+      const course = await Course.findById(courseId);
+      return res.render("educhapter.ejs", {
+        title: "Manage Chapters",
+        chapters: chapters,
+        courseId: courseId, // helpful if you need it in the UI
+        course: course,
+      });
+    } catch (error) {
+      console.error("Error fetching chapters:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  },
+);
+
+app.get(
+  "/course/:courseId/chapter/create",
+  connectEnsureLogin.ensureLoggedIn(),
+  (req, res) => {
+    const courseId = req.params.courseId;
+    res.render("createChapter.ejs", {
+      title: "Create Chapter",
+      csrfToken: req.csrfToken(),
+      courseId,
     });
-  } catch (error) {
-    console.error("Error fetching chapters:", error);
-    return res.status(500).json({ error: "Internal server error" });
-  }
-});
+  },
+);
 
-app.get("/course/:courseId/chapter/create", (req, res) => {
-  const courseId = req.params.courseId;
-  res.render("createChapter.ejs", {
-    title: "Create Chapter",
-    csrfToken: req.csrfToken(),
-    courseId,
-  });
-});
-
-app.post("/course/:courseId/chapter/create", async (req, res) => {
-  const { title, description } = req.body;
-  const courseId = req.params.courseId;
-  try {
-    await Chapter.createChapter(title, description, courseId);
-    res.redirect(`/course/${courseId}`);
-  } catch (err) {
-    console.error("Error creating chapter:", err);
-    res.status(500).send("Failed to create chapter");
-  }
-});
+app.post(
+  "/course/:courseId/chapter/create",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (req, res) => {
+    const { title, description } = req.body;
+    const courseId = req.params.courseId;
+    try {
+      await Chapter.createChapter(title, description, courseId);
+      res.redirect(`/course/${courseId}`);
+    } catch (err) {
+      console.error("Error creating chapter:", err);
+      res.status(500).send("Failed to create chapter");
+    }
+  },
+);
 
 module.exports = app;

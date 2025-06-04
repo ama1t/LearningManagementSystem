@@ -9,28 +9,28 @@
   <body class="bg-gray-900 min-h-screen p-6">
     <header>
       <div class="bg-gray-800 flex justify-between mb-6 rounded-xl font-bold p-4">
-        <h1 class="text-2xl font-bold text-purple-500"><%= course.title %></h1>
+        <h1 class="text-2xl font-bold text-purple-500"><%= chapter.title %></h1>
       </div>
     </header>
     <div class="max-w-4xl mx-auto bg-gray-800 p-6 rounded-2xl shadow-md">
       <div class="flex justify-between items-center mb-4">
-        <h1 class="text-2xl font-semibold text-purple-500">Chapters</h1>
+        <h1 class="text-2xl font-semibold text-purple-500">Pages</h1>
       </div>
       <div class="mb-8">
-        <% if (chapters.length === 0) { %>
-            <p class="text-gray-500">No chapters added yet.</p>
+        <% if (pages.length === 0) { %>
+            <p class="text-gray-500">No pages added yet.</p>
           <% } else { %>
             <ul class="space-y-4">
-              <% chapters.forEach((chapter, index) => { %>
+              <% pages.forEach((page, index) => { %>
                 <li class="bg-gray-700 p-4 rounded-xl shadow flex justify-between items-center">
                   <div>
                     <h2 class="text-lg font-semibold text-white">
                       <span class="text-white font-bold mr-2">L<%= index + 1 %>:</span>
-                      <a href="course/<%= courseId %>/chapter/<%= chapter.id %>/pages" class="hover:underline hover:text-indigo-600">
-                        <%= chapter.title %>
+                      <a href="/chapter/<%= chapter.id %>/pages" class="hover:underline hover:text-indigo-600">
+                        <%= page.title %>
                       </a>
                     </h2>
-                    <p class="text-sm text-gray-300"><%= chapter.description %></p>
+                    <p class="text-sm text-gray-300"><%= page.description %></p>
                   </div>
                   <div class="flex gap-2">
                     <a href="/chapter/edit/<%= chapter.id %>" class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded-md text-sm">Edit</a>
