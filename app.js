@@ -335,4 +335,22 @@ app.get(
   },
 );
 
+app.get("/course/:courseId/view", async (req, res) => {
+  const courseId = req.params.courseId;
+  const course = await Course.findById(courseId);
+  const chapters = await Chapter.getChapterByCourseId(courseId);
+  const pages = await Page.findAll();
+  if (req.accepts("html")) {
+    return res.render("viewCourse.ejs", {
+      title: "View Course",
+      courseId,
+      course,
+      chapters,
+      pages,
+    });
+  } else {
+    return res.status(400).json({ error: "Invalid request format" });
+  }
+});
+
 module.exports = app;

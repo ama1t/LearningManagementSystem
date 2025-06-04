@@ -54,13 +54,14 @@
                   👥  students
                 </p>
                 <div class="flex gap-2">
-                  <button class="bg-purple-600 hover:bg-purple-700 px-3 py-1 rounded-md">
+                  <a href="/course/<%= course.id %>/view" class="bg-purple-600 hover:bg-purple-700 px-3 py-1 rounded-md">
                     View Course
-                  </button>
-                  <button class="bg-green-600 hover:bg-green-700 px-3 py-1 rounded-md">
+                  </a>
+                  <a href="/course/<%= course.id %>/enroll" class="bg-green-600 hover:bg-green-700 px-3 py-1 rounded-md">
                     Enroll
-                  </button>
+                  </a>
                 </div>
+                
               </div>
             <% }) %>
           </div>
