@@ -20,17 +20,17 @@
 
   <!-- Course Grid -->
   <main class="p-8 max-w-6xl mx-auto">
-    <% if (courses.length === 0) { %>
-      <p class="text-gray-400 mt-6">You haven't created any courses.</p>
+    <% if (enrollments.length === 0) { %>
+      <p class="text-gray-400 mt-6">You haven't enrolled in any courses.</p>
     <% } else { %>
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
-        <% courses.forEach(course => { %>
+        <% enrollments.forEach(enrollment => { %>
           <div class="bg-gray-800 p-4 rounded-lg shadow hover:shadow-lg transition">
-            <img src="<%= course.imageUrl %>" alt="Course Image" class="w-full h-40 object-cover rounded mb-4">
-            <h3 class="text-lg font-semibold mb-1"><%= course.title %></h3>
-            <p class="text-sm text-gray-300 mb-2"><%= course.description %></p>
-            <p class="text-sm text-gray-400 mb-4">👥 <%= course.students || 0 %> students</p>
-            <a href="/course/<%= course.id %>" class="inline-block bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-md text-white">View</a>
+            <img src="<%= enrollment.courseEnrollments.imageUrl %>" alt="Course Image" class="w-full h-40 object-cover rounded mb-4">
+            <h3 class="text-lg font-semibold mb-1"><%= enrollment.courseEnrollments.title %></h3>
+            <p class="text-sm text-gray-300 mb-2"><%= enrollment.courseEnrollments.description %></p>
+            <p class="text-sm text-gray-400 mb-4">👥  students</p>
+            <a href="/course/<%= enrollment.courseEnrollments.id %>" class="inline-block bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-md text-white">View</a>
           </div>
         <% }); %>
       </div>

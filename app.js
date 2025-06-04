@@ -1,6 +1,6 @@
 const express = require("express");
 const app = express();
-const { Course, User, Chapter, Page } = require("./models");
+const { Course, User, Chapter, Page, Enrollment } = require("./models");
 var csrf = require("tiny-csrf");
 var cookieParser = require("cookie-parser");
 
@@ -142,12 +142,20 @@ app.get("/signout", (req, res) => {
 app.get("/dashboard", connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
   try {
     const courses = await Course.getAllCourses();
+    const user = await User.findByPk(req.user.id);
     if (req.accepts("html")) {
       if (req.user && req.user.role === "educator") {
-        return res.render("educator.ejs", { courses });
+        return res.render("educator.ejs", {
+          courses,
+          user,
+        });
       }
       if (req.user && req.user.role === "student") {
-        return res.render("student.ejs", { courses });
+        return res.render("student.ejs", {
+          courses,
+          user,
+          csrfToken: req.csrfToken(),
+        });
       }
     } else {
       return res.json(courses);
@@ -159,11 +167,13 @@ app.get("/dashboard", connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
 });
 
 app.get("/course", connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
+  const userId = req.user.id;
   try {
-    const courses = await Course.findByEducatorId(req.user.id);
+    const courses = await Course.findByEducatorId(userId);
     if (req.accepts("html")) {
       return res.render("educatorCourses.ejs", {
         courses,
+        userId,
       });
     } else {
       return res.json(courses);
@@ -335,21 +345,71 @@ app.get(
   },
 );
 
-app.get("/course/:courseId/view", async (req, res) => {
-  const courseId = req.params.courseId;
-  const course = await Course.findById(courseId);
-  const chapters = await Chapter.getChapterByCourseId(courseId);
-  const pages = await Page.findAll();
-  if (req.accepts("html")) {
-    return res.render("viewCourse.ejs", {
-      title: "View Course",
-      courseId,
-      course,
-      chapters,
-      pages,
+app.get(
+  "/course/:courseId/view",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (req, res) => {
+    const courseId = req.params.courseId;
+    const course = await Course.findById(courseId);
+    const chapters = await Chapter.getChapterByCourseId(courseId);
+    const pages = await Page.findAll();
+    if (req.accepts("html")) {
+      return res.render("viewCourse.ejs", {
+        title: "View Course",
+        courseId,
+        course,
+        chapters,
+        pages,
+      });
+    } else {
+      return res.status(400).json({ error: "Invalid request format" });
+    }
+  },
+);
+
+app.post(
+  "/course/:courseId/enroll",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (req, res) => {
+    const courseId = req.params.courseId;
+    const userId = req.user.id;
+
+    try {
+      await Enrollment.create({ studentId: userId, courseId });
+      res.redirect(`/courses/${courseId}`);
+    } catch (error) {
+      console.error("Error enrolling in course:", error);
+      res.status(500).send("Failed to enroll in course");
+    }
+  },
+);
+
+app.get("/mycourses", connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
+  const userId = req.user.id;
+
+  try {
+    const enrollments = await Enrollment.findAll({
+      where: { studentId: userId },
+      include: [
+        {
+          model: Course,
+          as: "courseEnrollments",
+        },
+      ],
     });
-  } else {
-    return res.status(400).json({ error: "Invalid request format" });
+
+    if (req.accepts("html")) {
+      return res.render("studentCourses.ejs", {
+        enrollments,
+        userId,
+        csrfToken: req.csrfToken(),
+      });
+    } else {
+      return res.json(enrollments);
+    }
+  } catch (error) {
+    console.error("Error fetching enrollments:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 

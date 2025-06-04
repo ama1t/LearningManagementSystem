@@ -21,7 +21,7 @@
             
           </button>
           <button class="bg-indigo-700 hover:bg-indigo-800 px-4 py-2 rounded-md">
-            <a href="/course">View courses</a>
+            <a href="/course">My courses</a>
           </button>
           <button class="bg-cyan-700 hover:bg-cyan-800 px-4 py-2 rounded-md">
             <a href="/reports">View reports</a>
@@ -32,9 +32,9 @@
       <!-- Available Courses -->
       <section>
         <h2 class="text-xl font-semibold text-purple-300 mb-4">
-          Available Courses
+          Other Courses
         </h2>
-
+        <% courses=courses.filter(course => course.educatorId != userId) %>
         <% if (courses.length === 0) { %>
           <p class="text-gray-400">No courses available</p>
         <% } else { %>
@@ -54,11 +54,8 @@
                   👥  students
                 </p>
                 <div class="flex gap-2">
-                  <a href="/course/<%= course.id %>/view" class="bg-purple-600 hover:bg-purple-700 px-3 py-1 rounded-md">
-                    View Course
-                  </a>
-                  <a href="/course/<%= course.id %>/enroll" class="bg-green-600 hover:bg-green-700 px-3 py-1 rounded-md">
-                    Enroll
+                  <a href="/course/<%= course.id %>/view" class="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-md">
+                    View
                   </a>
                 </div>
                 
