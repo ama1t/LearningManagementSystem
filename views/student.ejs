@@ -13,7 +13,7 @@
 
     <!-- Main Section -->
     <main class="p-8 max-w-6xl mx-auto">
-      <!-- Admin Actions -->
+      <!-- Navigation -->
       <section class="mb-4">
         <div class="flex flex-col sm:flex-row gap-4">
           <a href="/mycourses" class="bg-indigo-700 hover:bg-indigo-800 px-4 py-2 rounded-md text-white">
@@ -31,7 +31,12 @@
 
       <!-- Available Courses -->
       <section>
-        <% courses = courses.filter(course => course.educatorId != user.id); %>
+        <% 
+          courses = courses.filter(course => 
+            !enrolledCourseIds.includes(course.id)
+          ); 
+        %>
+        
         <% if (courses.length === 0) { %>
           <p class="text-gray-400">No courses available</p>
         <% } else { %>
@@ -54,7 +59,7 @@
 
                 <!-- Instructor -->
                 <p class="text-sm text-gray-400 mb-1">
-                  Instructor: <%= user.name %>
+                  Instructor: <%= course.educatorName || "N/A" %>
                 </p>
 
                 <!-- Students Placeholder -->

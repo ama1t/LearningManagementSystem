@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <title><%= course.title %></title>
+</head>
+<body class="bg-gray-900 min-h-screen p-6 text-white">
+  <header>
+    <div class="bg-gray-800 flex justify-between mb-6 rounded-xl font-bold p-4">
+      <h1 class="text-2xl font-bold text-purple-500"><%= course.title %></h1>
+    </div>
+  </header> 
+
+  <div class="max-w-4xl mx-auto bg-gray-800 p-6 rounded-2xl shadow-md">
+    <% if (chapters.length === 0) { %>
+      <p class="text-gray-500">No chapters added yet.</p>
+    <% } else { %>
+      <div class="mb-6 flex justify-center">
+        <select id="chapterSelector" class="w-1/2 px-4 py-2 rounded-lg bg-gray-700 text-white font-semibold hover:text-purple-400 hover:bg-gray-900" onchange="showChapterPages()">
+          <% chapters.forEach((chapter, index) => { %>
+            <option value="chapter-<%= chapter.id %>">L<%= index + 1 %>: <%= chapter.title %></option>
+          <% }) %>
+        </select>
+      </div>
+
+      <% chapters.forEach((chapter) => { 
+        const chapterPages = pages.filter(page => page.chapterId === chapter.id); 
+      %>
+        <div id="chapter-<%= chapter.id %>" class="hidden chapter-content space-y-4">
+          <% if (chapterPages.length > 0) { %>
+            <% chapterPages.forEach(page => { %>
+              <div class="border border-gray-600 rounded-lg p-3 bg-gray-800 hover:bg-gray-900 transition">
+                <a href="/mycourses/<%= course.id %>/chapter/<%= chapter.id %>/page/<%= page.id %>/view" class="text-lg font-semibold text-white hover:text-purple-400">
+                  <%= page.title %>
+                </a>
+              </div>
+            <% }) %>
+          <% } else { %>
+            <p class="text-gray-400">No pages added to this chapter yet.</p>
+          <% } %>
+        </div>
+      <% }) %>
+    <% } %>
+  </div>
+
+  <script>
+    function showChapterPages() {
+      const selectedId = document.getElementById('chapterSelector').value;
+      const allChapters = document.querySelectorAll('.chapter-content');
+      allChapters.forEach(ch => ch.classList.add('hidden'));
+
+      const selectedDiv = document.getElementById(selectedId);
+      if (selectedDiv) {
+        selectedDiv.classList.remove('hidden');
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const selector = document.getElementById('chapterSelector');
+      if (selector.options.length > 0) {
+        selector.selectedIndex = 0;
+        showChapterPages();
+      }
+    });
+  </script>
+</body>
+</html>

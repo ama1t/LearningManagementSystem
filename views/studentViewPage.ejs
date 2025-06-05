@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title><%= page.title %></title>
+  </head>
+  <body class="bg-gray-900 min-h-screen text-white p-6">
+    <header class="bg-gray-800 p-4 rounded-xl mb-6 shadow-md">
+      <h1 class="text-3xl font-bold text-purple-400"><%= page.title %></h1>
+    </header>
+
+    <main
+      class="max-w-2xl mx-auto bg-gray-800 p-6 rounded-xl shadow-md space-y-6"
+    >
+      <section>
+        <article class="prose prose-invert max-w-none text-white">
+          <%= page.content %>
+        </article>
+      </section>
+    </main>
+    <footer
+      class="max-w-2xl mx-auto bg-gray-800 p-3 rounded-xl shadow-md space-x-6 mt-6"
+    >
+      <section class="flex justify-between items-center">
+        <a
+          href="/page/view"
+          class="bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-lg"
+        >
+          ← Previous
+        </a>
+        <form action="/page/<%= page.id %>/complete" method="POST">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+          <button
+            type="submit"
+            class="bg-gray-700 hover:bg-gray-900 text-white py-2 px-4 rounded-lg mx-auto"
+          >
+            Mark as read
+          </button>
+        </form>
+        <a
+          href="/page/view"
+          class="bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-lg"
+        >
+          Next →
+        </a>
+      </section>
+    </footer>
+  </body>
+</html>

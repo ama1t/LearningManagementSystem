@@ -143,6 +143,7 @@ app.get("/dashboard", connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
   try {
     const courses = await Course.getAllCourses();
     const user = await User.findByPk(req.user.id);
+
     if (req.accepts("html")) {
       if (req.user && req.user.role === "educator") {
         return res.render("educator.ejs", {
@@ -150,11 +151,21 @@ app.get("/dashboard", connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
           user,
         });
       }
+
       if (req.user && req.user.role === "student") {
+        // Fetch enrolled courses
+        const enrolledCourses = await Enrollment.findAll({
+          where: { studentId: req.user.id },
+          attributes: ["courseId"],
+        });
+
+        const enrolledCourseIds = enrolledCourses.map((e) => e.courseId);
+
         return res.render("student.ejs", {
           courses,
           user,
           csrfToken: req.csrfToken(),
+          enrolledCourseIds,
         });
       }
     } else {
@@ -376,7 +387,7 @@ app.post(
 
     try {
       await Enrollment.create({ studentId: userId, courseId });
-      res.redirect(`/courses/${courseId}`);
+      res.redirect(`/mycourses/${courseId}`);
     } catch (error) {
       console.error("Error enrolling in course:", error);
       res.status(500).send("Failed to enroll in course");
@@ -412,5 +423,49 @@ app.get("/mycourses", connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
+
+app.get(
+  "/mycourses/:courseId",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (req, res) => {
+    const courseId = req.params.courseId;
+    try {
+      const course = await Course.findById(courseId);
+      const chapters = await Chapter.getChapterByCourseId(courseId);
+      const pages = await Page.findAll();
+      res.render("studentView.ejs", {
+        course,
+        chapters,
+        pages,
+        csrfToken: req.csrfToken(),
+      });
+    } catch (error) {
+      console.error("Error fetching course details:", error);
+      res.status(500).send("Internal server error");
+    }
+  },
+);
+
+app.get(
+  "/mycourses/:courseId/chapter/:chapterId/page/:pageId/view",
+  async (req, res) => {
+    const { courseId, chapterId, pageId } = req.params;
+    try {
+      const page = await Page.findById(pageId);
+      if (!page) {
+        return res.status(404).send("Page not found");
+      }
+      res.render("studentViewPage.ejs", {
+        page,
+        courseId,
+        chapterId,
+        csrfToken: req.csrfToken(),
+      });
+    } catch (error) {
+      console.error("Error fetching page:", error);
+      res.status(500).send("Internal server error");
+    }
+  },
+);
 
 module.exports = app;
