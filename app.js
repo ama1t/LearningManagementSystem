@@ -468,4 +468,51 @@ app.get(
   },
 );
 
+// GET: Show edit form
+app.get("/course/:id/edit", async (req, res) => {
+  const course = await Course.findByPk(req.params.id);
+  res.render("editCourse", { course });
+});
+
+// PUT: Update course
+app.put("/course/:id", async (req, res) => {
+  const course = await Course.findByPk(req.params.id);
+  if (req.body.title !== undefined) course.title = req.body.title;
+  if (req.body.description !== undefined)
+    course.description = req.body.description;
+  await course.save();
+  res.redirect(`/course/${course.id}`);
+});
+
+// GET: Show edit form
+app.get("/chapters/:id/edit", async (req, res) => {
+  const chapter = await Chapter.findByPk(req.params.id);
+  res.render("editChapter", { chapter });
+});
+
+// PUT: Update chapter
+app.put("/chapters/:id", async (req, res) => {
+  const chapter = await Chapter.findByPk(req.params.id);
+  if (req.body.title !== undefined) chapter.title = req.body.title;
+  if (req.body.description !== undefined)
+    chapter.description = req.body.description;
+  await chapter.save();
+  res.redirect(`/course/${chapter.courseId}`);
+});
+
+// GET: Show edit form
+app.get("/pages/:id/edit", async (req, res) => {
+  const page = await Page.findByPk(req.params.id);
+  res.render("editPage", { page });
+});
+
+// PUT: Update page
+app.put("/pages/:id", async (req, res) => {
+  const page = await Page.findByPk(req.params.id);
+  if (req.body.title !== undefined) page.title = req.body.title;
+  if (req.body.content !== undefined) page.content = req.body.content;
+  await page.save();
+  res.redirect(`/course/${page.courseId}`); // Or redirect to the specific page
+});
+
 module.exports = app;

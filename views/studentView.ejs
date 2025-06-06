@@ -31,11 +31,12 @@
         <div id="chapter-<%= chapter.id %>" class="hidden chapter-content space-y-4">
           <% if (chapterPages.length > 0) { %>
             <% chapterPages.forEach(page => { %>
+              <a href="/mycourses/<%= course.id %>/chapter/<%= chapter.id %>/page/<%= page.id %>/view" class="text-lg font-semibold text-white hover:text-purple-400">
               <div class="border border-gray-600 rounded-lg p-3 bg-gray-800 hover:bg-gray-900 transition">
-                <a href="/mycourses/<%= course.id %>/chapter/<%= chapter.id %>/page/<%= page.id %>/view" class="text-lg font-semibold text-white hover:text-purple-400">
+                
                   <%= page.title %>
-                </a>
               </div>
+            </a>
             <% }) %>
           <% } else { %>
             <p class="text-gray-400">No pages added to this chapter yet.</p>
