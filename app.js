@@ -320,6 +320,7 @@ app.get(
         chapters: chapters,
         courseId: courseId, // helpful if you need it in the UI
         course: course,
+        csrfToken: req.csrfToken(),
       });
     } catch (error) {
       console.error("Error fetching chapters:", error);
@@ -635,6 +636,48 @@ app.post(
     } catch (err) {
       console.log(err);
       res.status(500).send("Error deleting cour");
+    }
+  },
+);
+
+app.post(
+  "/chapter/:id/delete",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (req, res) => {
+    try {
+      const chapter = await Chapter.findByPk(req.params.id);
+      if (chapter) {
+        const course = await Course.findByPk(chapter.courseId);
+        if (course && course.educatorId === req.user.id) {
+          await chapter.destroy();
+        }
+      }
+      res.redirect(`/course/${chapter.courseId}`);
+    } catch (err) {
+      console.log(err);
+      res.status(500).send("Error deleting chapter");
+    }
+  },
+);
+
+app.post(
+  "/page/:id/delete",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (req, res) => {
+    try {
+      const page = await Page.findByPk(req.params.id);
+      if (page) {
+        const chapter = await Chapter.findByPk(page.chapterId);
+        const course = await Course.findByPk(chapter.courseId);
+        if (course && course.educatorId === req.user.id) {
+          await page.destroy();
+        }
+      }
+      const chapter = await Chapter.findByPk(page.chapterId);
+      res.redirect(`/course/${chapter.courseId}/chapter/${page.chapterId}`);
+    } catch (err) {
+      console.log(err);
+      res.status(500).send("Error deleting page");
     }
   },
 );
