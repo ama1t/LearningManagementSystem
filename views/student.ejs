@@ -36,7 +36,7 @@
             !enrolledCourseIds.includes(course.id)
           ); 
         %>
-        
+
         <% if (courses.length === 0) { %>
           <p class="text-gray-400">No courses available</p>
         <% } else { %>
@@ -44,12 +44,12 @@
             <% courses.forEach(course => { %>
               <div class="bg-gray-800 p-4 rounded-lg shadow hover:shadow-lg transition">
                 <!-- Thumbnail image -->
-                <img src="<%= course.imageUrl %>" alt="Course Thumbnail"
+                <img src="<%= course.imageUrl || '/default-course.jpg' %>" alt="Course Thumbnail"
                      class="w-full h-40 object-cover rounded-md mb-4" />
 
                 <!-- Course Title -->
                 <h3 class="text-lg font-semibold text-white mb-1">
-                  <%= course.name %>
+                  <%= course.title %>
                 </h3>
 
                 <!-- Course Description -->
@@ -59,12 +59,12 @@
 
                 <!-- Instructor -->
                 <p class="text-sm text-gray-400 mb-1">
-                  Instructor: <%= course.educatorName || "N/A" %>
+                  Instructor :  <%= course.educator.name || "N/A" %>
                 </p>
 
-                <!-- Students Placeholder -->
+                <!-- Students Count -->
                 <p class="text-sm text-gray-400 mb-4">
-                  👥 Students
+                  👥 <%= course.dataValues?.studentsCount || 0 %> students
                 </p>
 
                 <!-- Action Buttons -->

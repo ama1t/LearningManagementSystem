@@ -3,6 +3,7 @@ const app = express();
 const { Course, User, Chapter, Page, Enrollment } = require("./models");
 var csrf = require("tiny-csrf");
 var cookieParser = require("cookie-parser");
+const { Op, Sequelize } = require("sequelize");
 
 const passport = require("passport");
 const connectEnsureLogin = require("connect-ensure-login");
@@ -10,7 +11,9 @@ const session = require("express-session");
 const LocalStrategy = require("passport-local");
 const bcrypt = require("bcrypt");
 const saltRounds = 10;
+const methodOverride = require("method-override");
 
+app.use(methodOverride("_method"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser("your secret here"));
@@ -141,25 +144,71 @@ app.get("/signout", (req, res) => {
 
 app.get("/dashboard", connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
   try {
-    const courses = await Course.getAllCourses();
     const user = await User.findByPk(req.user.id);
 
     if (req.accepts("html")) {
-      if (req.user && req.user.role === "educator") {
+      if (req.user.role === "educator") {
+        // Fetch educator's courses with enrolled student count
+        const courses = await Course.findAll({
+          include: [
+            {
+              model: Enrollment,
+              as: "courseEnrollments",
+              attributes: [],
+            },
+            {
+              model: User,
+              as: "educator", // must match the alias in `belongsTo`
+              attributes: ["id", "name", "email"], // include necessary educator fields
+            },
+          ],
+          attributes: {
+            include: [
+              [
+                Sequelize.fn("COUNT", Sequelize.col("courseEnrollments.id")),
+                "studentsCount",
+              ],
+            ],
+          },
+          group: ["Course.id", "educator.id"], // group by educator ID to avoid errors
+        });
+
         return res.render("educator.ejs", {
           courses,
           user,
         });
       }
 
-      if (req.user && req.user.role === "student") {
-        // Fetch enrolled courses
+      if (req.user.role === "student") {
         const enrolledCourses = await Enrollment.findAll({
           where: { studentId: req.user.id },
           attributes: ["courseId"],
         });
-
         const enrolledCourseIds = enrolledCourses.map((e) => e.courseId);
+
+        const courses = await Course.findAll({
+          include: [
+            {
+              model: Enrollment,
+              as: "courseEnrollments",
+              attributes: [],
+            },
+            {
+              model: User,
+              as: "educator", // must match the alias in `belongsTo`
+              attributes: ["id", "name", "email"], // include necessary educator fields
+            },
+          ],
+          attributes: {
+            include: [
+              [
+                Sequelize.fn("COUNT", Sequelize.col("courseEnrollments.id")),
+                "studentsCount",
+              ],
+            ],
+          },
+          group: ["Course.id", "educator.id"], // group by educator ID to avoid errors
+        });
 
         return res.render("student.ejs", {
           courses,
@@ -169,22 +218,51 @@ app.get("/dashboard", connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
         });
       }
     } else {
+      const courses = await Course.findAll();
       return res.json(courses);
     }
   } catch (error) {
-    console.error("Error fetching courses:", error);
+    console.error("Error fetching dashboard data:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 });
 
 app.get("/course", connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
   const userId = req.user.id;
+
   try {
-    const courses = await Course.findByEducatorId(userId);
+    const rawCourses = await Course.findAll({
+      where: { educatorId: userId },
+      include: [
+        {
+          model: Enrollment,
+          as: "courseEnrollments",
+          attributes: [],
+        },
+      ],
+      attributes: {
+        include: [
+          [
+            Sequelize.fn("COUNT", Sequelize.col("courseEnrollments.id")),
+            "studentsCount",
+          ],
+        ],
+      },
+      group: ["Course.id"],
+    });
+
+    // Map studentsCount into course.students for easier EJS rendering
+    const courses = rawCourses.map((course) => {
+      const plain = course.get({ plain: true });
+      plain.students = course.get("studentsCount");
+      return plain;
+    });
+
     if (req.accepts("html")) {
       return res.render("educatorCourses.ejs", {
         courses,
         userId,
+        csrfToken: req.csrfToken(),
       });
     } else {
       return res.json(courses);
@@ -399,27 +477,49 @@ app.get("/mycourses", connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
   const userId = req.user.id;
 
   try {
+    // Get all courses student is enrolled in
     const enrollments = await Enrollment.findAll({
       where: { studentId: userId },
-      include: [
-        {
-          model: Course,
-          as: "courseEnrollments",
-        },
-      ],
+      attributes: ["courseId"],
     });
 
-    if (req.accepts("html")) {
-      return res.render("studentCourses.ejs", {
-        enrollments,
-        userId,
-        csrfToken: req.csrfToken(),
-      });
-    } else {
-      return res.json(enrollments);
-    }
+    const courseIds = enrollments.map((e) => e.courseId);
+
+    const courses = await Course.findAll({
+      where: {
+        id: {
+          [Op.in]: courseIds,
+        },
+      },
+      include: [
+        {
+          model: User,
+          as: "educator",
+          attributes: ["name"], // educator name
+        },
+        {
+          model: Enrollment,
+          as: "courseEnrollments",
+          attributes: [], // we count, so no need to fetch each
+        },
+      ],
+      attributes: {
+        include: [
+          [
+            Sequelize.fn("COUNT", Sequelize.col("courseEnrollments.id")),
+            "studentsCount",
+          ],
+        ],
+      },
+      group: ["Course.id", "educator.id"], // group by for aggregation + joins
+    });
+
+    res.render("studentCourses.ejs", {
+      user: req.user,
+      courses,
+    });
   } catch (error) {
-    console.error("Error fetching enrollments:", error);
+    console.error("Error fetching enrolled courses:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 });
@@ -471,27 +571,33 @@ app.get(
 // GET: Show edit form
 app.get("/course/:id/edit", async (req, res) => {
   const course = await Course.findByPk(req.params.id);
-  res.render("editCourse", { course });
+  res.render("editCourse", { course, csrfToken: req.csrfToken() });
 });
 
 // PUT: Update course
 app.put("/course/:id", async (req, res) => {
   const course = await Course.findByPk(req.params.id);
+  if (!course) {
+    return res.status(404).send("Course not found");
+  }
+
   if (req.body.title !== undefined) course.title = req.body.title;
   if (req.body.description !== undefined)
     course.description = req.body.description;
+  if (req.body.imageUrl !== undefined) course.imageUrl = req.body.imageUrl;
+
   await course.save();
-  res.redirect(`/course/${course.id}`);
+  res.redirect(`/course`);
 });
 
 // GET: Show edit form
-app.get("/chapters/:id/edit", async (req, res) => {
+app.get("/chapter/:id/edit", async (req, res) => {
   const chapter = await Chapter.findByPk(req.params.id);
-  res.render("editChapter", { chapter });
+  res.render("editChapter", { chapter, csrfToken: req.csrfToken() });
 });
 
 // PUT: Update chapter
-app.put("/chapters/:id", async (req, res) => {
+app.put("/chapter/:id", async (req, res) => {
   const chapter = await Chapter.findByPk(req.params.id);
   if (req.body.title !== undefined) chapter.title = req.body.title;
   if (req.body.description !== undefined)
@@ -501,18 +607,36 @@ app.put("/chapters/:id", async (req, res) => {
 });
 
 // GET: Show edit form
-app.get("/pages/:id/edit", async (req, res) => {
+app.get("/page/:id/edit", async (req, res) => {
   const page = await Page.findByPk(req.params.id);
-  res.render("editPage", { page });
+  res.render("editPage", { page, csrfToken: req.csrfToken() });
 });
 
 // PUT: Update page
-app.put("/pages/:id", async (req, res) => {
+app.put("/page/:id", async (req, res) => {
   const page = await Page.findByPk(req.params.id);
+  const chapter = await Chapter.findByPk(page.chapterId);
   if (req.body.title !== undefined) page.title = req.body.title;
   if (req.body.content !== undefined) page.content = req.body.content;
   await page.save();
-  res.redirect(`/course/${page.courseId}`); // Or redirect to the specific page
+  res.redirect(`/course/${chapter.courseId}/chapter/${page.chapterId}`); // Or redirect to the specific page
 });
+
+app.post(
+  "/course/:id/delete",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (req, res) => {
+    try {
+      const course = await Course.findByPk(req.params.id);
+      if (course && course.educatorId === req.user.id) {
+        await course.destroy();
+      }
+      res.redirect("/course");
+    } catch (err) {
+      console.log(err);
+      res.status(500).send("Error deleting cour");
+    }
+  },
+);
 
 module.exports = app;

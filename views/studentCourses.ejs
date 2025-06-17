@@ -2,38 +2,60 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>My Courses</title>
+  <title>My Enrolled Courses</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-900 text-white">
 
   <!-- Header -->
   <%- include('header.ejs') %>
-  <div class="">
-  <!-- Navigation Tab -->
-  <nav class="flex gap-6 px-8 pt-6 border-b border-purple-600 text-lg font-semibold mx-6">
-    <span class="text-purple-400 border-b-2 border-purple-400 pb-2">My Courses</span>
-  </nav>
+
 
   <!-- Course Grid -->
-  <main class="px-6 max-w-6xl mx-auto">
-    <% if (enrollments.length === 0) { %>
-      <p class="text-gray-400 mt-6">You haven't enrolled in any courses.</p>
+  <main class="p-8 max-w-6xl mx-auto">
+     <!-- Navigation -->
+  <nav class="flex gap-6 px-8 pt-6 border-b border-purple-600 text-lg font-semibold">
+    <span class="text-purple-400 border-b-2 border-purple-400 pb-2">My Enrolled Courses</span>
+  </nav>
+    <% if (courses.length === 0) { %>
+      <p class="text-gray-400 mt-6">You're not enrolled in any courses yet.</p>
     <% } else { %>
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
-        <% enrollments.forEach(enrollment => { %>
+        <% courses.forEach(course => { %>
           <div class="bg-gray-800 p-4 rounded-lg shadow hover:shadow-lg transition">
-            <img src="<%= enrollment.courseEnrollments.imageUrl %>" alt="Course Image" class="w-full h-40 object-cover rounded mb-4">
-            <h3 class="text-lg font-semibold mb-1"><%= enrollment.courseEnrollments.title %></h3>
-            <p class="text-sm text-gray-300 mb-2"><%= enrollment.courseEnrollments.description %></p>
-            <p class="text-sm text-gray-400 mb-4">👥  students</p>
-            <a href="/mycourses/<%= enrollment.courseEnrollments.id %>" class="inline-block bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-md text-white">View</a>
+            <!-- Course Image (optional, if you have imageUrl field) -->
+
+            <img src="<%= course.imageUrl || '/default-course.jpg' %>" alt="Course Thumbnail"
+            class="w-full h-40 object-cover rounded-md mb-4" />
+
+       <!-- Course Title -->
+       <h3 class="text-lg font-semibold text-white mb-1">
+         <%= course.title %>
+       </h3>
+
+       <!-- Course Description -->
+       <p class="text-sm text-gray-300 mb-2">
+         <%= course.description || "No description available." %>
+       </p>
+
+       <!-- Instructor -->
+       <p class="text-sm text-gray-400 mb-1">
+         Instructor :  <%= course.educator.name || "N/A" %>
+       </p>
+
+       <!-- Students Count -->
+       <p class="text-sm text-gray-400 mb-4">
+         👥 <%= course.dataValues?.studentsCount || 0 %> students
+       </p>
+            <!-- View Button -->
+            <a href="/mycourses/<%= course.id %>" class="bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-md text-white inline-block">
+              View Course
+            </a>
           </div>
         <% }); %>
       </div>
     <% } %>
   </main>
-</div>
 
 </body>
 </html>

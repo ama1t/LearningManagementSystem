@@ -9,61 +9,81 @@
   <body class="bg-gray-900 text-white font-sans">
     <!-- Header -->
     <%- include('header.ejs') %>
+
     <!-- Main Section -->
     <main class="p-8 max-w-6xl mx-auto">
       <!-- Admin Actions -->
-      <section class="mb-8">
+      <section class="mb-6">
         <h2 class="text-xl font-semibold text-purple-300 mb-4">
           Administrative Actions
         </h2>
         <div class="flex flex-col sm:flex-row gap-4">
-          <button class="bg-purple-700 hover:bg-purple-800 px-4 py-2 rounded-md"><a href="/course/create">Create a new course</a>
-            
-          </button>
-          <button class="bg-indigo-700 hover:bg-indigo-800 px-4 py-2 rounded-md">
-            <a href="/course">My courses</a>
-          </button>
-          <button class="bg-cyan-700 hover:bg-cyan-800 px-4 py-2 rounded-md">
-            <a href="/reports">View reports</a>
-          </button>
+          <a href="/course/create" class="bg-purple-700 hover:bg-purple-800 px-4 py-2 rounded-md text-center">
+            Create a new course
+          </a>
+          <a href="/course" class="bg-indigo-700 hover:bg-indigo-800 px-4 py-2 rounded-md text-center">
+            My courses
+          </a>
+          <a href="/reports" class="bg-cyan-700 hover:bg-cyan-800 px-4 py-2 rounded-md text-center">
+            View reports
+          </a>
         </div>
       </section>
 
-      <!-- Available Courses -->
+      <!-- Section Header -->
+      <section class="mb-4">
+        <nav class="flex gap-6 px-8 pt-6 border-b border-purple-600 text-lg font-semibold">
+          <span class="text-purple-400 border-b-2 border-purple-400 pb-2">Other Courses</span>
+        </nav>
+      </section>
+
+      <!-- Other Courses -->
       <section>
-        <h2 class="text-xl font-semibold text-purple-300 mb-4">
-          Other Courses
-        </h2>
-        <% courses=courses.filter(course => course.educatorId != user.id) %>
-        <% if (courses.length === 0) { %>
-          <p class="text-gray-400">No courses available</p>
+        <% 
+           otherCourses = courses.filter(course => course.educatorId !== user.id);
+        %>
+        <% if (otherCourses.length === 0) { %>
+          <p class="text-gray-400">No other courses available.</p>
         <% } else { %>
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            <% courses.forEach(course => { %>
+            <% otherCourses.forEach(course => {
+              id=course.educatorId %>
               <div class="bg-gray-800 p-4 rounded-lg shadow hover:shadow-lg transition">
-                <!-- Thumbnail image -->
-                <img src="<%= course.imageUrl %>" alt="Course Thumbnail"
-                class="w-full h-40 object-cover rounded-md mb-4" />
-                <h3 class="text-lg font-semibold text-white mb-2">
-                  <%= course.name %>
+                <!-- Thumbnail -->
+                <img src="<%= course.imageUrl || '/default-course.jpg' %>" alt="Course Thumbnail"
+                     class="w-full h-40 object-cover rounded-md mb-4" />
+
+                <!-- Title -->
+                <h3 class="text-lg font-semibold text-white mb-1">
+                  <%= course.title %>
                 </h3>
+
+                <!-- Description -->
                 <p class="text-sm text-gray-300 mb-2">
-                  Instructor: <%= course.educatorId %>
+                  <%= course.description || "No description available." %>
                 </p>
+
+                <!-- Instructor -->
+                <p class="text-sm text-gray-400 mb-1">
+                  Instructor :  <%= course.educator.name || "N/A" %>
+                </p>
+
+                <!-- Student Count -->
                 <p class="text-sm text-gray-400 mb-4">
-                  👥  students
+                  👥 <%= course.dataValues?.studentsCount || 0 %> students
                 </p>
+
+                <!-- Action -->
                 <div class="flex gap-2">
-                  <a href="/course/<%= course.id %>/view" class="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-md">
+                  <a href="/course/<%= course.id %>/view"
+                     class="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-md text-white">
                     View
                   </a>
                 </div>
-                
               </div>
             <% }) %>
           </div>
         <% } %>
-
       </section>
     </main>
   </body>
