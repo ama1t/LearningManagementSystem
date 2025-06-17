@@ -13,6 +13,10 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: "chapterId",
         as: "chapter",
       });
+      this.hasMany(models.Completion, {
+        foreignKey: "pageId",
+        onDelete: "CASCADE",
+      });
     }
     static async getAllPages() {
       return await this.findAll();

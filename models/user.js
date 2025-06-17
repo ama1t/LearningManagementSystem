@@ -17,6 +17,10 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: "educatorId",
         as: "courses",
       });
+      this.hasMany(models.Completion, {
+        foreignKey: "userId",
+        onDelete: "CASCADE",
+      });
     }
   }
   User.init(
