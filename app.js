@@ -1,6 +1,13 @@
 const express = require("express");
 const app = express();
-const { Course, User, Chapter, Page, Enrollment } = require("./models");
+const {
+  Course,
+  User,
+  Chapter,
+  Page,
+  Enrollment,
+  Completion,
+} = require("./models");
 var csrf = require("tiny-csrf");
 var cookieParser = require("cookie-parser");
 const { Op, Sequelize } = require("sequelize");
@@ -551,15 +558,20 @@ app.get(
   "/mycourses/:courseId/chapter/:chapterId/page/:pageId/view",
   async (req, res) => {
     const { courseId, chapterId, pageId } = req.params;
+    const userId = req.user.id; // Assuming user is logged in and we have access to req.user
     try {
       const page = await Page.findById(pageId);
       if (!page) {
         return res.status(404).send("Page not found");
       }
+      const isCompleted = await Completion.findOne({
+        where: { userId, pageId },
+      });
       res.render("studentViewPage.ejs", {
         page,
         courseId,
         chapterId,
+        isCompleted: !!isCompleted, // Convert to boolean
         csrfToken: req.csrfToken(),
       });
     } catch (error) {
@@ -678,6 +690,41 @@ app.post(
     } catch (err) {
       console.log(err);
       res.status(500).send("Error deleting page");
+    }
+  },
+);
+
+app.post(
+  "/completions/:pageId",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (req, res) => {
+    const userId = req.user.id;
+    const pageId = req.params.pageId;
+    const page = await Page.findByPk(pageId);
+    const chapterId = page.chapterId;
+    const chapter = await Chapter.findByPk(chapterId);
+    const courseId = chapter.courseId;
+
+    try {
+      const existing = await Completion.findOne({
+        where: { userId, pageId },
+      });
+
+      if (!existing) {
+        await Completion.create({
+          userId,
+          courseId,
+          chapterId,
+          pageId,
+        });
+      }
+
+      res.redirect(
+        `/mycourses/${courseId}/chapter/${chapterId}/page/${pageId}/view`,
+      );
+    } catch (error) {
+      console.error("Error marking page as complete:", error);
+      res.status(500).send("Internal Server Error");
     }
   },
 );
