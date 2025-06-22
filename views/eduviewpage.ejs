@@ -3,15 +3,15 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Manage Chapters</title>
+    <title>View Page | LMS</title>
     <script src="https://cdn.tailwindcss.com"></script>
   </head>
   <body class="bg-gray-900 min-h-screen p-6">
     <header class="bg-gray-800 p-4 rounded-xl mb-6 shadow-md flex justify-between items-center">
-      <h1 class="text-2xl font-bold text-purple-500"><%= page.title %></h1>
+      <h1 class="text-xl font-bold text-purple-500"><%= page.title %></h1>
 
       <!-- Exit Icon -->
-      <a href="/course/courseId %>/chapter/<%= page.chapterId %>" title="Exit">
+      <a href="/course/<%= courseId %>/chapter/<%= page.chapterId %>" title="Exit">
         <div class="bg-gray-700 rounded-md hover:bg-gray-900">
         <svg xmlns="http://www.w3.org/2000/svg"
              fill="none" viewBox="0 0 24 24"

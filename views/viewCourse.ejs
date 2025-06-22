@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <script src="https://cdn.tailwindcss.com"></script>
-  <title><%= course.title %></title>
+  <title>View Course | LMS</title>
   <style>
       .chapter-page:hover .lock-icon {
         display: block;
@@ -46,9 +46,9 @@
         <div id="chapter-<%= chapter.id %>" class="hidden chapter-content space-y-4">
           <% if (chapterPages.length > 0) { %>
             <% chapterPages.forEach(page => { %>
-              <div class="border border-gray-600 rounded-lg p-3 bg-gray-800 hover:bg-gray-900 transition chapter-page">
+              <div class="border border-gray-600 rounded-lg p-3 bg-gray-800 text-white hover:bg-gray-900 hover:text-purple-400 transition chapter-page">
                 <div class="flex justify-between items-center">
-                  <h3 class="text-lg font-semibold text-white hover:text-purple-400 cursor-pointer" title="Enroll to unlock">
+                  <h3 class="text-lg font-semibold cursor-pointer" title="Enroll to unlock">
                     <%= page.title %>
                   </h3>
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"

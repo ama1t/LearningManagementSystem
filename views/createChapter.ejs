@@ -4,18 +4,11 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="csrf-token" content="<%= csrfToken %>" />
-    <title>Create Course - LMS</title>
+    <title>Create Chapter | LMS</title>
     <script src="https://cdn.tailwindcss.com"></script>
   </head>
   <body class="bg-gray-900 text-white font-sans flex items-center min-h-screen">
-    <!-- Header -->
-    <!-- <%- include('header.ejs') %> -->
-    <!-- Main -->
     <main class="w-full mx-auto max-w-md">
-      <h2 class="text-xl font-semibold text-purple-300 mb-6">
-        Add a New Chapter
-      </h2>
-
       <form
         action="/course/<%= courseId %>/chapter/create"
         method="POST"
@@ -24,6 +17,9 @@
         <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
         <!-- Title -->
         <div>
+          <h2 class="text-2xl font-bold text-purple-500 mb-6 text-center">
+            Create a New Chapter
+          </h2>
           <label for="title" class="block text-sm mb-1">Chapter Title</label>
           <input
             type="text"
