@@ -545,7 +545,6 @@ app.get("/mycourses", connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
     });
 
     const completedPageIds = completions.map((c) => c.pageId);
-    console.log("Completed Page IDs:", completedPageIds);
 
     // Step 4: Calculate progress for each course
     const courseData = courses.map((course) => {
@@ -563,9 +562,6 @@ app.get("/mycourses", connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
 
       const progress =
         totalPages > 0 ? Math.round((completedPages / totalPages) * 100) : 0;
-      console.log("totalPages:", totalPages);
-      console.log("completedPages:", completedPages);
-      console.log("Progress for course:", course.title, "is", progress, "%");
       return {
         ...course.get({ plain: true }),
         progress,
@@ -803,6 +799,92 @@ app.post(
       );
     } catch (error) {
       console.error("Error marking page as complete:", error);
+      res.status(500).send("Internal Server Error");
+    }
+  },
+);
+
+app.get(
+  "/educator/reports",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (req, res) => {
+    const educatorId = req.user.id;
+
+    try {
+      // Step 1: Get all educator's courses
+      const courses = await Course.findAll({
+        where: { educatorId },
+        include: [
+          {
+            model: Enrollment,
+            as: "courseEnrollments",
+            attributes: ["studentId"],
+          },
+          {
+            model: Chapter,
+            as: "chapters",
+            include: [
+              {
+                model: Page,
+                as: "pages",
+                attributes: ["id"],
+              },
+            ],
+          },
+        ],
+      });
+
+      // Step 2: Get all completions for those courses
+      const courseIds = courses.map((c) => c.id);
+      const completions = await Completion.findAll({
+        where: {
+          courseId: { [Op.in]: courseIds },
+        },
+        attributes: ["userId", "courseId", "pageId"],
+      });
+
+      // Step 3: Prepare final report data
+      const reportData = courses.map((course) => {
+        const courseId = course.id;
+        const totalStudents = course.courseEnrollments.length;
+
+        // Collect all page IDs for this course
+        const allPageIds = course.chapters.flatMap((chapter) => {
+          return chapter.pages?.map((p) => p.id) || [];
+        });
+
+        // Map: studentId => Set of completed pageIds
+        const studentCompletions = {};
+        completions
+          .filter((c) => c.courseId === courseId)
+          .forEach((c) => {
+            if (!studentCompletions[c.userId])
+              studentCompletions[c.userId] = new Set();
+            studentCompletions[c.userId].add(c.pageId);
+          });
+
+        // Count students who completed all pages
+        const completedStudents = Object.values(studentCompletions).filter(
+          (pageSet) => allPageIds.every((pid) => pageSet.has(pid)),
+        ).length;
+
+        const completionPercentage =
+          totalStudents > 0
+            ? Math.round((completedStudents / totalStudents) * 100)
+            : 0;
+
+        return {
+          title: course.title,
+          totalStudents,
+          completedStudents,
+          completionPercentage,
+        };
+      });
+
+      // Render
+      res.render("educatorReport.ejs", { user: req.user, reportData });
+    } catch (error) {
+      console.error("Error generating educator report:", error);
       res.status(500).send("Internal Server Error");
     }
   },
