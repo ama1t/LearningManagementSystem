@@ -20,37 +20,61 @@
         </article>
       </section>
     </main>
-    <footer class="max-w-4xl mx-auto bg-gray-800 p-3 rounded-xl shadow-md space-x-6 mt-6">
-      <section class="flex justify-between items-center">
-        <a
-          href="/page/view"
-          class="bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-lg"
-        >
-          ← Previous
-        </a>
+    <footer class="max-w-4xl mx-auto bg-gray-800 p-4 rounded-xl shadow-md mt-6">
+      <section class="grid grid-cols-3 items-center">
     
-        <% if (isCompleted) { %>
-          <span class="text-green-400 font-semibold">✔ Marked as read</span>
-        <% } else { %>
-          <form action="/completions/<%= page.id %>" method="POST">
-            <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-            <button
-              type="submit"
-              class="bg-blue-600 hover:bg-blue-800 text-white py-2 px-4 rounded-lg"
+        <!-- Back Button -->
+        <div class="text-left">
+          <% if (previousPage) { %>
+            <a
+              href="/mycourses/<%= courseId %>/chapter/<%= chapterId %>/page/<%= previousPage.id %>/view"
+              class="inline-flex items-center gap-2 bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded-lg transition"
             >
-              Mark as read
-            </button>
-          </form>
-        <% } %>
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24"
+                stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="m18.75 4.5-7.5 7.5 7.5 7.5m-6-15L5.25 12l7.5 7.5" />
+              </svg>
+              Back
+            </a>
+          <% } %>
+        </div>
     
-        <a
-          href="/page/view"
-          class="bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-lg"
-        >
-          Next →
-        </a>
+        <!-- Centered Mark as Read -->
+        <div class="text-center">
+          <% if (isCompleted) { %>
+            <span class="text-green-400 font-semibold">✔ Marked as read</span>
+          <% } else { %>
+            <form action="/completions/<%= page.id %>" method="POST">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+              <button
+                type="submit"
+                class="bg-blue-600 hover:bg-blue-800 text-white py-2 px-4 rounded-lg transition"
+              >
+                Mark as read
+              </button>
+            </form>
+          <% } %>
+        </div>
+    
+        <!-- Next Button -->
+        <div class="text-right">
+          <% if (nextPage) { %>
+            <a
+              href="/mycourses/<%= courseId %>/chapter/<%= chapterId %>/page/<%= nextPage.id %>/view"
+              class="inline-flex items-center gap-2 bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded-lg transition"
+            >
+              Next
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24"
+                stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="m5.25 4.5 7.5 7.5-7.5 7.5m6-15 7.5 7.5-7.5 7.5" />
+              </svg>
+            </a>
+          <% } %>
+        </div>
+    
       </section>
-    </footer>
-    
+    </footer>    
   </body>
 </html>

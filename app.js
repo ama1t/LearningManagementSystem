@@ -556,23 +556,39 @@ app.get(
 
 app.get(
   "/mycourses/:courseId/chapter/:chapterId/page/:pageId/view",
+  connectEnsureLogin.ensureLoggedIn(),
   async (req, res) => {
     const { courseId, chapterId, pageId } = req.params;
-    const userId = req.user.id; // Assuming user is logged in and we have access to req.user
+
     try {
-      const page = await Page.findById(pageId);
-      if (!page) {
-        return res.status(404).send("Page not found");
-      }
-      const isCompleted = await Completion.findOne({
-        where: { userId, pageId },
+      const page = await Page.findByPk(pageId);
+      if (!page) return res.status(404).send("Page not found");
+
+      const pages = await Page.findAll({
+        where: { chapterId },
+        order: [["id", "ASC"]], // or sort by page number if available
       });
+
+      const index = pages.findIndex((p) => p.id === parseInt(pageId));
+      const previousPage = index > 0 ? pages[index - 1] : null;
+      const nextPage = index < pages.length - 1 ? pages[index + 1] : null;
+
+      // Check if the current page is completed
+      const isCompleted = await Completion.findOne({
+        where: {
+          userId: req.user.id,
+          pageId: page.id,
+        },
+      });
+
       res.render("studentViewPage.ejs", {
         page,
         courseId,
         chapterId,
-        isCompleted: !!isCompleted, // Convert to boolean
         csrfToken: req.csrfToken(),
+        previousPage,
+        nextPage,
+        isCompleted: !!isCompleted,
       });
     } catch (error) {
       console.error("Error fetching page:", error);
