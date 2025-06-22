@@ -485,14 +485,14 @@ app.get("/mycourses", connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
   const userId = req.user.id;
 
   try {
-    // Get all courses student is enrolled in
+    // Step 1: Get enrolled course IDs
     const enrollments = await Enrollment.findAll({
       where: { studentId: userId },
       attributes: ["courseId"],
     });
-
     const courseIds = enrollments.map((e) => e.courseId);
 
+    // Step 2: Fetch courses with educator, chapters, pages
     const courses = await Course.findAll({
       where: {
         id: {
@@ -503,12 +503,23 @@ app.get("/mycourses", connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
         {
           model: User,
           as: "educator",
-          attributes: ["name"], // educator name
+          attributes: ["name"],
         },
         {
           model: Enrollment,
           as: "courseEnrollments",
-          attributes: [], // we count, so no need to fetch each
+          attributes: [],
+        },
+        {
+          model: Chapter,
+          as: "chapters",
+          include: [
+            {
+              model: Page,
+              as: "pages",
+              attributes: ["id"],
+            },
+          ],
         },
       ],
       attributes: {
@@ -519,12 +530,51 @@ app.get("/mycourses", connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
           ],
         ],
       },
-      group: ["Course.id", "educator.id"], // group by for aggregation + joins
+      group: ["Course.id", "educator.id", "chapters.id", "chapters->pages.id"],
     });
 
+    // Step 3: Fetch completed pages by the user
+    const completions = await Completion.findAll({
+      where: {
+        userId,
+        courseId: {
+          [Op.in]: courseIds,
+        },
+      },
+    });
+
+    const completedPageIds = completions.map((c) => c.pageId);
+    console.log("Completed Page IDs:", completedPageIds);
+
+    // Step 4: Calculate progress for each course
+    const courseData = courses.map((course) => {
+      const totalPages = course.chapters.reduce((sum, chapter) => {
+        return sum + (chapter.pages ? chapter.pages.length : 0);
+      }, 0);
+
+      const completedPages = course.chapters.reduce((sum, chapter) => {
+        return (
+          sum +
+          (chapter.pages || []).filter((p) => completedPageIds.includes(p.id))
+            .length
+        );
+      }, 0);
+
+      const progress =
+        totalPages > 0 ? Math.round((completedPages / totalPages) * 100) : 0;
+      console.log("totalPages:", totalPages);
+      console.log("completedPages:", completedPages);
+      console.log("Progress for course:", course.title, "is", progress, "%");
+      return {
+        ...course.get({ plain: true }),
+        progress,
+      };
+    });
+
+    // Step 5: Render page
     res.render("studentCourses.ejs", {
       user: req.user,
-      courses,
+      courses: courseData,
     });
   } catch (error) {
     console.error("Error fetching enrolled courses:", error);
@@ -537,15 +587,27 @@ app.get(
   connectEnsureLogin.ensureLoggedIn(),
   async (req, res) => {
     const courseId = req.params.courseId;
+    const userId = req.user.id;
+
     try {
       const course = await Course.findById(courseId);
       const chapters = await Chapter.getChapterByCourseId(courseId);
       const pages = await Page.findAll();
+
+      // ✅ Get all completions for the current user
+      const completions = await Completion.findAll({
+        where: { userId },
+      });
+
+      // ✅ Extract completed page IDs
+      const completedPageIds = completions.map((comp) => comp.pageId);
+
       res.render("studentView.ejs", {
         course,
         chapters,
         pages,
         csrfToken: req.csrfToken(),
+        completedPageIds, // ✅ pass this to the EJS view
       });
     } catch (error) {
       console.error("Error fetching course details:", error);

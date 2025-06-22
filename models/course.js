@@ -21,6 +21,10 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: "courseId",
         onDelete: "CASCADE",
       });
+      this.hasMany(models.Chapter, {
+        foreignKey: "courseId",
+        as: "chapters",
+      });
     }
 
     static async findByEducatorId(educatorId) {

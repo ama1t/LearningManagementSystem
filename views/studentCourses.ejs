@@ -43,15 +43,23 @@
          Instructor :  <%= course.educator.name || "N/A" %>
        </p>
 
-       <!-- Students Count -->
-       <p class="text-sm text-gray-400 mb-4">
-         👥 <%= course.dataValues?.studentsCount || 0 %> students
-       </p>
-            <!-- View Button -->
-            <a href="/mycourses/<%= course.id %>" class="bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-md text-white inline-block">
-              View Course
-            </a>
+            <!-- View Button and Progress -->
+            <div class="flex justify-between items-center mt-4">
+              <!-- View Course Button -->
+              <a href="/mycourses/<%= course.id %>" class="bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-md text-white inline-block">
+                View Course
+              </a>
+            
+              <!-- Progress Section -->
+              <div class="w-1/2 ml-4">
+                <p class="text-sm text-gray-300 mb-1 font-semibold text-center">Progress</p>
+                <p class="text-sm text-purple-400 text-center font-medium"><%= course.progress %>%</p>
+              </div>
+            </div>
+            
+
           </div>
+          
         <% }); %>
       </div>
     <% } %>
