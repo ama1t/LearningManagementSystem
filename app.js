@@ -269,6 +269,7 @@ app.get("/course", connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
       return res.render("educatorCourses.ejs", {
         courses,
         userId,
+        user: req.user,
         csrfToken: req.csrfToken(),
       });
     } else {
