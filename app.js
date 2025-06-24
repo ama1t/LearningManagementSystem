@@ -321,7 +321,10 @@ app.get(
     const courseId = req.params.courseId;
 
     try {
-      const chapters = await Chapter.getChapterByCourseId(courseId);
+      const chapters = await Chapter.findAll({
+        where: { courseId },
+        order: [["order", "ASC"]], // Order by the 'order' field
+      });
       const course = await Course.findById(courseId);
       return res.render("educhapter.ejs", {
         title: "Manage Chapters",
@@ -356,8 +359,16 @@ app.post(
   async (req, res) => {
     const { title, description } = req.body;
     const courseId = req.params.courseId;
+    const maxOrder = await Chapter.max("order", {
+      where: { courseId: courseId },
+    });
     try {
-      await Chapter.createChapter(title, description, courseId);
+      await Chapter.create({
+        title,
+        description,
+        courseId: courseId,
+        order: (maxOrder || 0) + 1,
+      });
       res.redirect(`/course/${courseId}`);
     } catch (err) {
       console.error("Error creating chapter:", err);
@@ -373,7 +384,10 @@ app.get(
     try {
       const { courseId, chapterId } = req.params;
       const chapter = await Chapter.findById(chapterId);
-      const pages = await Page.getPagesByChapterId(chapterId);
+      const pages = await Page.findAll({
+        where: { chapterId },
+        order: [["order", "ASC"]],
+      });
       res.render("edupages.ejs", {
         pages,
         chapter,
@@ -406,11 +420,15 @@ app.post(
   async (req, res) => {
     const { title, content } = req.body;
     const { courseId, chapterId } = req.params;
+    const maxOrder = await Page.max("order", {
+      where: { chapterId: chapterId },
+    });
     try {
       await Page.create({
         title,
         content,
-        chapterId,
+        chapterId: chapterId,
+        order: (maxOrder || 0) + 1,
       });
       res.redirect(`/course/${courseId}/chapter/${chapterId}`);
     } catch (err) {
@@ -448,19 +466,33 @@ app.get(
   connectEnsureLogin.ensureLoggedIn(),
   async (req, res) => {
     const courseId = req.params.courseId;
-    const course = await Course.findById(courseId);
-    const chapters = await Chapter.getChapterByCourseId(courseId);
-    const pages = await Page.findAll();
-    if (req.accepts("html")) {
-      return res.render("viewCourse.ejs", {
-        title: "View Course",
-        courseId,
-        course,
-        chapters,
-        pages,
+
+    try {
+      const course = await Course.findByPk(courseId);
+
+      const chapters = await Chapter.findAll({
+        where: { courseId },
+        order: [["order", "ASC"]],
       });
-    } else {
-      return res.status(400).json({ error: "Invalid request format" });
+
+      const pages = await Page.findAll({
+        order: [["order", "ASC"]],
+      });
+
+      if (req.accepts("html")) {
+        return res.render("viewCourse.ejs", {
+          title: "View Course",
+          courseId,
+          course,
+          chapters,
+          pages,
+        });
+      } else {
+        return res.status(400).json({ error: "Invalid request format" });
+      }
+    } catch (error) {
+      console.error("Error fetching course view:", error);
+      return res.status(500).json({ error: "Internal server error" });
     }
   },
 );
@@ -588,8 +620,14 @@ app.get(
 
     try {
       const course = await Course.findById(courseId);
-      const chapters = await Chapter.getChapterByCourseId(courseId);
-      const pages = await Page.findAll();
+      const chapters = await Chapter.findAll({
+        where: { courseId },
+        order: [["order", "ASC"]],
+      });
+      const pages = await Page.findAll({
+        where: { chapterId: chapters.map((c) => c.id) },
+        order: [["order", "ASC"]],
+      });
 
       // ✅ Get all completions for the current user
       const completions = await Completion.findAll({
@@ -625,7 +663,7 @@ app.get(
 
       const pages = await Page.findAll({
         where: { chapterId },
-        order: [["id", "ASC"]], // or sort by page number if available
+        order: [["order", "ASC"]], // or sort by page number if available
       });
 
       const index = pages.findIndex((p) => p.id === parseInt(pageId));
@@ -687,10 +725,18 @@ app.get("/chapter/:id/edit", async (req, res) => {
 // PUT: Update chapter
 app.put("/chapter/:id", async (req, res) => {
   const chapter = await Chapter.findByPk(req.params.id);
+
+  if (!chapter) {
+    return res.status(404).send("Chapter not found");
+  }
+
   if (req.body.title !== undefined) chapter.title = req.body.title;
   if (req.body.description !== undefined)
     chapter.description = req.body.description;
+  if (req.body.order !== undefined) chapter.order = parseInt(req.body.order);
+
   await chapter.save();
+
   res.redirect(`/course/${chapter.courseId}`);
 });
 
@@ -703,11 +749,23 @@ app.get("/page/:id/edit", async (req, res) => {
 // PUT: Update page
 app.put("/page/:id", async (req, res) => {
   const page = await Page.findByPk(req.params.id);
+  if (!page) return res.status(404).send("Page not found");
+
   const chapter = await Chapter.findByPk(page.chapterId);
+  if (!chapter) return res.status(404).send("Chapter not found");
+
+  // Update fields
   if (req.body.title !== undefined) page.title = req.body.title;
   if (req.body.content !== undefined) page.content = req.body.content;
+
+  if (req.body.order !== undefined) {
+    const parsedOrder = parseInt(req.body.order);
+    if (!isNaN(parsedOrder)) page.order = parsedOrder;
+  }
+
   await page.save();
-  res.redirect(`/course/${chapter.courseId}/chapter/${page.chapterId}`); // Or redirect to the specific page
+
+  res.redirect(`/course/${chapter.courseId}/chapter/${page.chapterId}`);
 });
 
 app.post(
