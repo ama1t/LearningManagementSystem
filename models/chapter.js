@@ -57,6 +57,13 @@ module.exports = (sequelize, DataTypes) => {
     {
       sequelize,
       modelName: "Chapter",
+      indexes: [
+        {
+          unique: true,
+          fields: ["courseId", "order"],
+          name: "unique_order_per_course",
+        },
+      ],
     },
   );
   return Chapter;
