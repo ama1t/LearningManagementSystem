@@ -948,4 +948,59 @@ app.get(
   },
 );
 
+app.get("/changepassword", connectEnsureLogin.ensureLoggedIn(), (req, res) => {
+  try {
+    res.render("changePassword.ejs", {
+      csrfToken: req.csrfToken(),
+      error: null,
+      success: null,
+    });
+  } catch (error) {
+    console.error("Error generating educator report:", error);
+    res.status(500).send("Internal Server Error");
+  }
+});
+
+app.post(
+  "/changepassword",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (req, res) => {
+    const { currentPassword, newPassword, confirmPassword } = req.body;
+
+    try {
+      const user = await User.findByPk(req.user.id);
+
+      const valid = await bcrypt.compare(currentPassword, user.password);
+      if (!valid) {
+        return res.render("changePassword", {
+          error: "Current password is incorrect.",
+          csrfToken: req.csrfToken(),
+          success: null,
+        });
+      }
+
+      if (newPassword !== confirmPassword) {
+        return res.render("changePassword", {
+          error: "New passwords do not match.",
+          csrfToken: req.csrfToken(),
+          success: null,
+        });
+      }
+
+      const hashed = await bcrypt.hash(newPassword, 10);
+      user.password = hashed;
+      await user.save();
+
+      res.render("changePassword", {
+        success: "Password updated successfully.",
+        csrfToken: req.csrfToken(),
+        error: null,
+      });
+    } catch (error) {
+      console.error(error);
+      res.status(500).send("Internal Server Error");
+    }
+  },
+);
+
 module.exports = app;
