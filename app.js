@@ -19,20 +19,33 @@ const LocalStrategy = require("passport-local");
 const bcrypt = require("bcrypt");
 const saltRounds = 10;
 const methodOverride = require("method-override");
+const flash = require("connect-flash");
 
 app.use(methodOverride("_method"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser("your secret here"));
 app.use(csrf("123456789iamasecret987654321look", ["POST", "PUT", "DELETE"]));
-//const path = require("path");
+const path = require("path");
+// eslint-disable-next-line no-undef
+app.set("views", path.join(__dirname, "views"));
 
 app.use(
   session({
     secret: "your secret here",
     cookie: { maxAge: 24 * 60 * 60 * 1000 }, // 1 day
+    resave: false,
+    saveUninitialized: false,
   }),
 );
+
+app.use(flash());
+
+app.use(function (request, response, next) {
+  response.locals.messages = request.flash();
+  next();
+});
+
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -43,18 +56,23 @@ passport.use(
       passwordField: "password",
     },
     async (email, password, done) => {
-      await User.findOne({ where: { email: email } })
-        .then(async (user) => {
-          const result = await bcrypt.compare(password, user.password);
-          if (result) {
-            return done(null, user);
-          } else {
-            return done(null, false, { message: "Invalid email or password" });
-          }
-        })
-        .catch((error) => {
-          return done(error);
-        });
+      try {
+        const user = await User.findOne({ where: { email: email } });
+
+        if (!user) {
+          return done(null, false, { message: "Invalid email or password" });
+        }
+
+        const result = await bcrypt.compare(password, user.password);
+
+        if (result) {
+          return done(null, user);
+        } else {
+          return done(null, false, { message: "Invalid email or password" });
+        }
+      } catch (error) {
+        return done(error);
+      }
     },
   ),
 );
@@ -130,7 +148,10 @@ app.get("/login", (req, res) => {
 
 app.post(
   "/session",
-  passport.authenticate("local", { failureRedirect: "/login" }),
+  passport.authenticate("local", {
+    failureRedirect: "/login",
+    failureFlash: true,
+  }),
   (req, res) => {
     console.log("User authenticated successfully");
     console.log(req.user.role);
