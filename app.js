@@ -121,6 +121,12 @@ app.post("/users", async (req, res) => {
     req.flash("error", "Account already exists with this email.");
     return res.redirect("/signup");
   }
+
+  if (req.body.password.length < 6) {
+    req.flash("error", "Password must be at least 6 characters long.");
+    return res.redirect("/signup");
+  }
+
   const hashpwd = await bcrypt.hash(req.body.password, saltRounds);
   try {
     const user = await User.create({
