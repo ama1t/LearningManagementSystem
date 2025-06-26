@@ -115,37 +115,34 @@ app.get("/signup", (req, res) => {
 });
 
 app.post("/users", async (req, res) => {
-  const existingUser = await User.findOne({ where: { email: req.body.email } });
-
-  if (existingUser) {
-    req.flash("error", "Account already exists with this email.");
-    return res.redirect("/signup");
-  }
-
-  if (req.body.password.length < 6) {
-    req.flash("error", "Password must be at least 6 characters long.");
-    return res.redirect("/signup");
-  }
-
-  const hashpwd = await bcrypt.hash(req.body.password, saltRounds);
   try {
-    const user = await User.create({
-      name: req.body.name,
-      email: req.body.email,
-      password: hashpwd,
-      role: req.body.role,
-    });
+    const { name, email, password, role } = req.body;
+
+    const existingUser = await User.findOne({ where: { email } });
+    if (existingUser) {
+      req.flash("error", "Account already exists with this email.");
+      return res.redirect("/signup");
+    }
+
+    if (!password || password.length < 6) {
+      req.flash("error", "Password must be at least 6 characters long.");
+      return res.redirect("/signup");
+    }
+
+    const hashed = await bcrypt.hash(password, saltRounds);
+    const user = await User.create({ name, email, password: hashed, role });
+
     req.login(user, (err) => {
       if (err) {
-        console.log(err);
+        console.error("Login error:", err);
+        return res.status(500).send("Login failed");
       }
-      console.log(req.body.role);
-      res.redirect("/dashboard");
+      return res.redirect("/dashboard");
     });
   } catch (error) {
-    console.log(error);
-    req.flash("error", "Something went wrong. Please try again.");
-    res.redirect("/signup");
+    console.error("Signup error:", error);
+    req.flash("error", "Internal server error");
+    return res.redirect("/signup");
   }
 });
 
@@ -167,8 +164,6 @@ app.post(
     failureFlash: true,
   }),
   (req, res) => {
-    console.log("User authenticated successfully");
-    console.log(req.user.role);
     res.redirect("/dashboard");
   },
 );

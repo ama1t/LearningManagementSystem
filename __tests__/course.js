@@ -1,31 +1,97 @@
 const request = require("supertest");
-const db = require("../models/index");
 const app = require("../app");
+const db = require("../models");
+const bcrypt = require("bcrypt");
 
-let server, agent;
+let agent;
 
-describe("Course Management API - Create Course", () => {
-  beforeAll(async () => {
-    await db.sequelize.sync({ force: true }); // Reset DB
-    server = app.listen(3001);
-    agent = request.agent(server);
-  });
-
-  afterAll(async () => {
-    await db.sequelize.close();
-    await server.close();
-  });
-
-  test("should create a course successfully", async () => {
-    const courseData = {
-      title: "Full Stack Development",
-      description: "Learn full stack web development",
-      educatorId: 1,
-      imageUrl: "http://example.com/course.jpg",
-    };
-
-    const res = await agent.post("/course").send(courseData);
-
-    expect(302).toBe(302);
+beforeAll(async () => {
+  await db.sequelize.sync({ force: true });
+  agent = request.agent(app);
+  const hashedPassword = await bcrypt.hash("Password@123", 10);
+  await db.User.create({
+    name: "Test User",
+    email: "test@example.com",
+    password: hashedPassword,
+    role: "student",
   });
 });
+
+afterAll(async () => {
+  await db.sequelize.close();
+});
+
+describe("Authentication Flow", () => {
+  test("GET /signup should return 200", async () => {
+    const res = await agent.get("/signup");
+    expect(res.statusCode).toBe(200);
+    expect(res.text).toContain("Sign Up");
+  });
+
+  test("POST /users should register a new user", async () => {
+    const csrfToken = await getCsrfToken(agent, "/signup");
+
+    const res = await agent.post("/users").send({
+      name: "Test User",
+      email: "test1@example.com",
+      password: "Password123",
+      role: "student",
+      _csrf: csrfToken,
+    });
+
+    expect(res.statusCode).toBe(302);
+    expect(res.header.location).toBe("/dashboard");
+  });
+
+  test("POST /users should fail if email already exists", async () => {
+    const csrfToken = await getCsrfToken(agent, "/signup");
+
+    const res = await agent.post("/users").send({
+      name: "Duplicate User",
+      email: "test@example.com",
+      password: "Password@123",
+      role: "student",
+      _csrf: csrfToken,
+    });
+    expect(res.header.location).toBe("/signup");
+  });
+
+  test("POST /session should login user", async () => {
+    const csrfToken = await getCsrfToken(agent, "/login");
+    const res = await agent.post("/session").type("form").send({
+      email: "test@example.com",
+      password: "Password@123",
+      _csrf: csrfToken,
+    });
+    expect(res.statusCode).toBe(302);
+    expect(res.header.location).toBe("/dashboard");
+  });
+
+  test("POST /session should fail with wrong password", async () => {
+    const csrfToken = await getCsrfToken(agent, "/login");
+    const res = await agent.post("/session").type("form").send({
+      email: "test@example.com",
+      password: "WrongPassword",
+      _csrf: csrfToken,
+    });
+
+    console.log("Status:", res.statusCode);
+    console.log("Location:", res.header.location);
+    console.log("Body:", res.text);
+
+    expect(res.statusCode).toBe(302);
+    expect(res.header.location).toBe("/login");
+  });
+
+  test("GET /signout should logout user", async () => {
+    const res = await agent.get("/signout");
+    expect(res.statusCode).toBe(302);
+    expect(res.header.location).toBe("/");
+  });
+});
+
+async function getCsrfToken(agent, route = "/signup") {
+  const res = await agent.get(route);
+  const match = /name="_csrf" value="(.+?)"/.exec(res.text);
+  return match ? match[1] : "";
+}
