@@ -115,6 +115,12 @@ app.get("/signup", (req, res) => {
 });
 
 app.post("/users", async (req, res) => {
+  const existingUser = await User.findOne({ where: { email: req.body.email } });
+
+  if (existingUser) {
+    req.flash("error", "Account already exists with this email.");
+    return res.redirect("/signup");
+  }
   const hashpwd = await bcrypt.hash(req.body.password, saltRounds);
   try {
     const user = await User.create({
@@ -132,6 +138,8 @@ app.post("/users", async (req, res) => {
     });
   } catch (error) {
     console.log(error);
+    req.flash("error", "Something went wrong. Please try again.");
+    res.redirect("/signup");
   }
 });
 
