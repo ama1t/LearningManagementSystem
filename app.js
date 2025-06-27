@@ -806,12 +806,20 @@ app.post(
     try {
       const course = await Course.findByPk(req.params.id);
       if (course && course.educatorId === req.user.id) {
+        const chapters = await Chapter.findAll({
+          where: { courseId: course.id },
+        });
+        for (const chapter of chapters) {
+          await Page.destroy({ where: { chapterId: chapter.id } });
+        }
+        await Chapter.destroy({ where: { courseId: course.id } });
+        await Enrollment.destroy({ where: { courseId: course.id } });
         await course.destroy();
       }
       res.redirect("/course");
     } catch (err) {
-      console.log(err);
-      res.status(500).send("Error deleting cour");
+      console.error(err);
+      res.status(500).send("Error deleting course");
     }
   },
 );
@@ -825,12 +833,13 @@ app.post(
       if (chapter) {
         const course = await Course.findByPk(chapter.courseId);
         if (course && course.educatorId === req.user.id) {
-          await chapter.destroy();
+          await Page.destroy({ where: { chapterId: chapter.id } }); // delete pages
+          await chapter.destroy(); // then delete chapter
         }
       }
       res.redirect(`/course/${chapter.courseId}`);
     } catch (err) {
-      console.log(err);
+      console.error(err);
       res.status(500).send("Error deleting chapter");
     }
   },
