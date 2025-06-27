@@ -137,6 +137,7 @@ app.post("/users", async (req, res) => {
         console.error("Login error:", err);
         return res.status(500).send("Login failed");
       }
+      req.flash("success", `Welcome, ${user.name}!`);
       return res.redirect("/dashboard");
     });
   } catch (error) {

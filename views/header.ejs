@@ -11,6 +11,9 @@
 
   <!-- Navigation -->
   <div class="flex items-center gap-6">
+    <% if (messages.success && messages.success.length > 0) { %>
+      <span class="text-green-400 text-sm"><%= messages.success[0] %></span>
+    <% } %>    
     <a href="/dashboard" class="hover:text-purple-400 font-medium">Dashboard</a>
 
     <!-- User Menu -->
