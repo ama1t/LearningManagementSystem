@@ -9,7 +9,13 @@
   <body class="bg-gray-900 min-h-screen p-6">
     <header class="bg-gray-800 p-4 rounded-xl mb-6 shadow-md flex justify-between items-center">
       <h1 class="text-xl font-bold text-purple-500"><%= chapter.title %></h1>
-      
+      <% if (messages.success && messages.success.length > 0) { %>
+        <span class="text-green-400 text-sm"><%= messages.success[0] %></span>
+      <% } %> 
+      <% if (messages.error && messages.error.length > 0) { %>
+        <span class="text-red-400 text-sm"><%= messages.error[0] %></span>
+      <% } %>
+
       <!-- Exit Icon -->
       <a href="/course/<%= chapter.courseId %>" title="Exit">
         <div class="bg-gray-700 rounded-md hover:bg-gray-900">

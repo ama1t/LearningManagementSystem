@@ -336,11 +336,12 @@ app.post(
         req.user.id,
       );
 
-      // Redirect to chapter management page of the new course
+      req.flash("success", "Course created successfully!");
       return res.redirect(`/course/${course.id}`);
     } catch (error) {
       console.error("Error creating course:", error);
-      return res.status(500).json({ error: "Internal server error" });
+      req.flash("error", "Something went wrong. Please try again.");
+      return res.redirect("/course/create");
     }
   },
 );
@@ -400,10 +401,12 @@ app.post(
         courseId: courseId,
         order: (maxOrder || 0) + 1,
       });
+      req.flash("success", "Chapter Added successfully!");
       res.redirect(`/course/${courseId}`);
     } catch (err) {
       console.error("Error creating chapter:", err);
-      res.status(500).send("Failed to create chapter");
+      req.flash("error", "Something went wrong. Please try again.");
+      res.redirect(`/course/${courseId}/chapter/create`);
     }
   },
 );
@@ -461,10 +464,12 @@ app.post(
         chapterId: chapterId,
         order: (maxOrder || 0) + 1,
       });
+      req.flash("success", "Page Added successfully!");
       res.redirect(`/course/${courseId}/chapter/${chapterId}`);
     } catch (err) {
       console.error("Error creating page:", err);
-      res.status(500).send("Failed to create page");
+      req.flash("error", "Something went wrong. Please try again.");
+      res.redirect(`/course/${courseId}/chapter/${chapterId}/page/create`);
     }
   },
 );
@@ -537,10 +542,12 @@ app.post(
 
     try {
       await Enrollment.create({ studentId: userId, courseId });
+      req.flash("success", "Enrolled successfully!");
       res.redirect(`/mycourses/${courseId}`);
     } catch (error) {
       console.error("Error enrolling in course:", error);
-      res.status(500).send("Failed to enroll in course");
+      req.flash("error", "Failed to enroll in course");
+      res.redirect(`/mycourses`);
     }
   },
 );
@@ -726,76 +733,145 @@ app.get(
 );
 
 // GET: Show edit form
-app.get("/course/:id/edit", async (req, res) => {
-  const course = await Course.findByPk(req.params.id);
-  res.render("editCourse", { course, csrfToken: req.csrfToken() });
-});
+app.get(
+  "/course/:id/edit",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (req, res) => {
+    const course = await Course.findByPk(req.params.id);
+    res.render("editCourse", { course, csrfToken: req.csrfToken() });
+  },
+);
 
 // PUT: Update course
-app.put("/course/:id", async (req, res) => {
-  const course = await Course.findByPk(req.params.id);
-  if (!course) {
-    return res.status(404).send("Course not found");
-  }
+app.put(
+  "/course/:id",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (req, res) => {
+    const course = await Course.findByPk(req.params.id);
+    if (!course) {
+      return res.status(404).send("Course not found");
+    }
 
-  if (req.body.title !== undefined) course.title = req.body.title;
-  if (req.body.description !== undefined)
-    course.description = req.body.description;
-  if (req.body.imageUrl !== undefined) course.imageUrl = req.body.imageUrl;
+    if (req.body.title !== undefined) course.title = req.body.title;
+    if (req.body.description !== undefined)
+      course.description = req.body.description;
+    if (req.body.imageUrl !== undefined) course.imageUrl = req.body.imageUrl;
 
-  await course.save();
-  res.redirect(`/course`);
-});
+    await course.save();
+    req.flash("success", "Course updated successfully!");
+    res.redirect(`/course`);
+  },
+);
 
 // GET: Show edit form
-app.get("/chapter/:id/edit", async (req, res) => {
-  const chapter = await Chapter.findByPk(req.params.id);
-  res.render("editChapter", { chapter, csrfToken: req.csrfToken() });
-});
+app.get(
+  "/chapter/:id/edit",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (req, res) => {
+    const chapter = await Chapter.findByPk(req.params.id);
+    res.render("editChapter", { chapter, csrfToken: req.csrfToken() });
+  },
+);
 
 // PUT: Update chapter
-app.put("/chapter/:id", async (req, res) => {
-  const chapter = await Chapter.findByPk(req.params.id);
+app.put(
+  "/chapter/:id",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (req, res) => {
+    const chapter = await Chapter.findByPk(req.params.id);
+    if (!chapter) {
+      req.flash("error", "Chapter not found");
+      return res.redirect("/course");
+    }
 
-  if (!chapter) {
-    return res.status(404).send("Chapter not found");
-  }
+    const { title, description, order } = req.body;
 
-  if (req.body.title !== undefined) chapter.title = req.body.title;
-  if (req.body.description !== undefined)
-    chapter.description = req.body.description;
-  if (req.body.order !== undefined) chapter.order = parseInt(req.body.order);
+    if (order !== undefined) {
+      const parsedOrder = parseInt(order);
+      if (!isNaN(parsedOrder)) {
+        const exists = await Chapter.findOne({
+          where: {
+            courseId: chapter.courseId,
+            order: parsedOrder,
+            id: { [Op.ne]: chapter.id },
+          },
+        });
 
-  await chapter.save();
+        if (exists) {
+          req.flash(
+            "error",
+            `Order ${parsedOrder} already exists in this course`,
+          );
+          return res.redirect(`/chapter/${chapter.id}/edit`);
+        }
 
-  res.redirect(`/course/${chapter.courseId}`);
-});
+        chapter.order = parsedOrder;
+      }
+    }
+
+    if (title !== undefined) chapter.title = title;
+    if (description !== undefined) chapter.description = description;
+
+    await chapter.save();
+    req.flash("success", "Chapter updated successfully!");
+    res.redirect(`/course/${chapter.courseId}`);
+  },
+);
 
 // GET: Show edit form
-app.get("/page/:id/edit", async (req, res) => {
-  const page = await Page.findByPk(req.params.id);
-  res.render("editPage", { page, csrfToken: req.csrfToken() });
-});
+app.get(
+  "/page/:id/edit",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (req, res) => {
+    const page = await Page.findByPk(req.params.id);
+    res.render("editPage", { page, csrfToken: req.csrfToken() });
+  },
+);
 
 // PUT: Update page
-app.put("/page/:id", async (req, res) => {
+app.put("/page/:id", connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
   const page = await Page.findByPk(req.params.id);
-  if (!page) return res.status(404).send("Page not found");
-
-  const chapter = await Chapter.findByPk(page.chapterId);
-  if (!chapter) return res.status(404).send("Chapter not found");
-
-  // Update fields
-  if (req.body.title !== undefined) page.title = req.body.title;
-  if (req.body.content !== undefined) page.content = req.body.content;
-
-  if (req.body.order !== undefined) {
-    const parsedOrder = parseInt(req.body.order);
-    if (!isNaN(parsedOrder)) page.order = parsedOrder;
+  if (!page) {
+    req.flash("error", "Page not found");
+    return res.redirect("/course");
   }
 
-  await page.save();
+  const chapter = await Chapter.findByPk(page.chapterId);
+  if (!chapter) {
+    req.flash("error", "Chapter not found");
+    return res.redirect("/course");
+  }
 
+  const { title, content, order } = req.body;
+
+  if (order !== undefined) {
+    const parsedOrder = parseInt(order);
+    if (!isNaN(parsedOrder)) {
+      const exists = await Page.findOne({
+        where: {
+          chapterId: page.chapterId,
+          order: parsedOrder,
+          id: { [Op.ne]: page.id },
+        },
+      });
+
+      if (exists) {
+        req.flash(
+          "error",
+          `Order ${parsedOrder} already exists in this chapter`,
+        );
+        return res.redirect(`/page/${page.id}/edit`);
+      }
+
+      page.order = parsedOrder;
+    }
+  }
+
+  if (title !== undefined) page.title = title;
+  if (content !== undefined) page.content = content;
+
+  await page.save();
+  req.flash("success", "Page updated successfully!");
   res.redirect(`/course/${chapter.courseId}/chapter/${page.chapterId}`);
 });
 
@@ -816,10 +892,12 @@ app.post(
         await Enrollment.destroy({ where: { courseId: course.id } });
         await course.destroy();
       }
+      req.flash("success", "Course deleted successfully!");
       res.redirect("/course");
     } catch (err) {
       console.error(err);
-      res.status(500).send("Error deleting course");
+      req.flash("error", "An error occurred while deleting the course.");
+      res.redirect("/course");
     }
   },
 );
@@ -837,6 +915,7 @@ app.post(
           await chapter.destroy(); // then delete chapter
         }
       }
+      req.flash("success", "Chapter deleted successfully!");
       res.redirect(`/course/${chapter.courseId}`);
     } catch (err) {
       console.error(err);
@@ -859,6 +938,7 @@ app.post(
         }
       }
       const chapter = await Chapter.findByPk(page.chapterId);
+      req.flash("success", "Page deleted successfully!");
       res.redirect(`/course/${chapter.courseId}/chapter/${page.chapterId}`);
     } catch (err) {
       console.log(err);
@@ -996,7 +1076,7 @@ app.get("/changepassword", connectEnsureLogin.ensureLoggedIn(), (req, res) => {
       success: null,
     });
   } catch (error) {
-    console.error("Error generating educator report:", error);
+    console.error("Error rendering change password page:", error);
     res.status(500).send("Internal Server Error");
   }
 });
@@ -1010,6 +1090,7 @@ app.post(
     try {
       const user = await User.findByPk(req.user.id);
 
+      // Check if current password is correct
       const valid = await bcrypt.compare(currentPassword, user.password);
       if (!valid) {
         return res.render("changePassword", {
@@ -1019,6 +1100,7 @@ app.post(
         });
       }
 
+      // Check if new password matches confirmation
       if (newPassword !== confirmPassword) {
         return res.render("changePassword", {
           error: "New passwords do not match.",
@@ -1027,18 +1109,26 @@ app.post(
         });
       }
 
+      // Check password length
+      if (newPassword.length < 6) {
+        return res.render("changePassword", {
+          error: "New password must be at least 6 characters long.",
+          csrfToken: req.csrfToken(),
+          success: null,
+        });
+      }
+
+      // All good — update password
       const hashed = await bcrypt.hash(newPassword, 10);
       user.password = hashed;
       await user.save();
 
-      res.render("changePassword", {
-        success: "Password updated successfully.",
-        csrfToken: req.csrfToken(),
-        error: null,
-      });
+      req.flash("success", "Password changed successfully!");
+      return res.redirect(`/dashboard`);
     } catch (error) {
       console.error(error);
-      res.status(500).send("Internal Server Error");
+      req.flash("error", "An error occurred while changing the password.");
+      return res.redirect(`/changepassword`);
     }
   },
 );

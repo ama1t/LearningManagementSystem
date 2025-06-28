@@ -9,9 +9,15 @@
     class="bg-gray-900 text-white flex items-center justify-center min-h-screen"
   >
     <div class="bg-gray-800 p-8 rounded-xl shadow-lg w-full max-w-lg">
-      <h1 class="text-2xl font-bold text-green-400 mb-6 text-center">
+      <h1 class="text-2xl font-bold text-purple-400 mb-6 text-center">
         Edit Chapter
       </h1>
+
+      <% if (messages.error && messages.error.length > 0) { %>
+        <div class="text-red-500 mb-4">
+          <%= messages.error[0] %>
+        </div>
+      <% } %>
 
       <form
         action="/chapter/<%= chapter.id %>?_method=PUT"
@@ -30,7 +36,7 @@
             id="title"
             name="title"
             value="<%= chapter.title %>"
-            class="w-full px-4 py-2 rounded-lg bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+            class="w-full px-4 py-2 rounded-lg bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
           />
         </div>
 
@@ -43,7 +49,7 @@
             id="description"
             name="description"
             rows="6"
-            class="w-full px-4 py-2 rounded-lg bg-gray-700 text-white resize-none focus:outline-none focus:ring-2 focus:ring-green-500"
+            class="w-full px-4 py-2 rounded-lg bg-gray-700 text-white resize-none focus:outline-none focus:ring-2 focus:ring-purple-500"
           >
 <%= chapter.description %></textarea
           >
@@ -60,7 +66,7 @@
             name="order"
             value="<%= chapter.order %>"
             min="0"
-            class="w-full px-4 py-2 rounded-lg bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+            class="w-full px-4 py-2 rounded-lg bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
           />
         </div>
 
@@ -68,7 +74,7 @@
         <div class="flex justify-center mt-6">
           <button
             type="submit"
-            class="bg-green-600 hover:bg-green-700 px-6 py-2 rounded-md text-white font-semibold"
+            class="bg-purple-600 hover:bg-purple-700 px-6 py-2 rounded-md text-white font-semibold"
           >
             Update Chapter
           </button>

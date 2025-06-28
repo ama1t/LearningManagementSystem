@@ -9,10 +9,15 @@
     class="bg-gray-900 text-white flex items-center justify-center min-h-screen"
   >
     <div class="bg-gray-800 p-8 rounded-xl shadow-lg w-full max-w-lg">
-      <h1 class="text-2xl font-bold text-blue-400 mb-6 text-center">
+      <h1 class="text-2xl font-bold text-purple-400 mb-6 text-center">
         Edit Page
       </h1>
-
+      <% if (messages.success && messages.success.length > 0) { %>
+        <span class="text-green-400 text-sm"><%= messages.success[0] %></span>
+      <% } %>
+      <% if (messages.error && messages.error.length > 0) { %>
+        <span class="text-red-400 text-sm"><%= messages.error[0] %></span>
+      <% } %>
       <form
         action="/page/<%= page.id %>?_method=PUT"
         method="POST"
@@ -28,7 +33,7 @@
             id="title"
             name="title"
             value="<%= page.title %>"
-            class="w-full px-4 py-2 rounded-lg bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            class="w-full px-4 py-2 rounded-lg bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
           />
         </div>
 
@@ -39,7 +44,7 @@
             id="content"
             name="content"
             rows="10"
-            class="w-full px-4 py-2 rounded-lg bg-gray-700 text-white resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+            class="w-full px-4 py-2 rounded-lg bg-gray-700 text-white resize-none focus:outline-none focus:ring-2 focus:ring-purple-500"
           >
 <%= page.content %></textarea
           >
@@ -53,15 +58,15 @@
             id="order"
             name="order"
             value="<%= page.order || 0 %>"
-            min="0"
-            class="w-full px-4 py-2 rounded-lg bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            min="1"
+            class="w-full px-4 py-2 rounded-lg bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
           />
         </div>
 
         <div class="flex justify-center mt-6">
           <button
             type="submit"
-            class="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-md text-white font-semibold"
+            class="bg-purple-600 hover:bg-purple-700 px-6 py-2 rounded-md text-white font-semibold"
           >
             Update Page
           </button>
