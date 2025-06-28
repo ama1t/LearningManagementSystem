@@ -88,6 +88,39 @@ describe("Authentication Flow", () => {
     expect(res.statusCode).toBe(302);
     expect(res.header.location).toBe("/");
   });
+
+  test("POST /changepassword should update the password", async () => {
+    const csrfLogin = await getCsrfToken(agent, "/login");
+    await agent.post("/session").type("form").send({
+      email: "test@example.com",
+      password: "Password@123",
+      _csrf: csrfLogin,
+    });
+
+    const csrf = await getCsrfToken(agent, "/changepassword");
+
+    const res = await agent.post("/changepassword").type("form").send({
+      currentPassword: "Password@123",
+      newPassword: "NewPassword@123",
+      confirmPassword: "NewPassword@123",
+      _csrf: csrf,
+    });
+
+    expect(res.statusCode).toBe(302);
+    expect(res.header.location).toBe("/dashboard");
+
+    await agent.get("/signout");
+
+    const csrfNewLogin = await getCsrfToken(agent, "/login");
+    const loginResponse = await agent.post("/session").type("form").send({
+      email: "test@example.com",
+      password: "NewPassword@123",
+      _csrf: csrfNewLogin,
+    });
+
+    expect(loginResponse.statusCode).toBe(302);
+    expect(loginResponse.header.location).toBe("/dashboard");
+  });
 });
 
 async function getCsrfToken(agent, route = "/signup") {
