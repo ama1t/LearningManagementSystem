@@ -183,37 +183,48 @@ app.get("/signout", (req, res) => {
 app.get("/dashboard", connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
   try {
     const user = await User.findByPk(req.user.id);
+    const searchQuery = req.query.q?.trim() || "";
+
+    const searchCondition = {
+      [Op.or]: [
+        { title: { [Op.iLike]: `%${searchQuery}%` } },
+        { description: { [Op.iLike]: `%${searchQuery}%` } },
+      ],
+    };
+
+    const commonQuery = {
+      where: searchQuery ? searchCondition : {},
+      include: [
+        {
+          model: Enrollment,
+          as: "courseEnrollments",
+          attributes: [],
+        },
+        {
+          model: User,
+          as: "educator",
+          attributes: ["id", "name", "email"],
+        },
+      ],
+      attributes: {
+        include: [
+          [
+            Sequelize.fn("COUNT", Sequelize.col("courseEnrollments.id")),
+            "studentsCount",
+          ],
+        ],
+      },
+      group: ["Course.id", "educator.id"],
+    };
 
     if (req.accepts("html")) {
       if (req.user.role === "educator") {
-        // Fetch educator's courses with enrolled student count
-        const courses = await Course.findAll({
-          include: [
-            {
-              model: Enrollment,
-              as: "courseEnrollments",
-              attributes: [],
-            },
-            {
-              model: User,
-              as: "educator", // must match the alias in `belongsTo`
-              attributes: ["id", "name", "email"], // include necessary educator fields
-            },
-          ],
-          attributes: {
-            include: [
-              [
-                Sequelize.fn("COUNT", Sequelize.col("courseEnrollments.id")),
-                "studentsCount",
-              ],
-            ],
-          },
-          group: ["Course.id", "educator.id"], // group by educator ID to avoid errors
-        });
+        const courses = await Course.findAll(commonQuery);
 
         return res.render("educator.ejs", {
           courses,
           user,
+          searchQuery,
         });
       }
 
@@ -224,35 +235,14 @@ app.get("/dashboard", connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
         });
         const enrolledCourseIds = enrolledCourses.map((e) => e.courseId);
 
-        const courses = await Course.findAll({
-          include: [
-            {
-              model: Enrollment,
-              as: "courseEnrollments",
-              attributes: [],
-            },
-            {
-              model: User,
-              as: "educator", // must match the alias in `belongsTo`
-              attributes: ["id", "name", "email"], // include necessary educator fields
-            },
-          ],
-          attributes: {
-            include: [
-              [
-                Sequelize.fn("COUNT", Sequelize.col("courseEnrollments.id")),
-                "studentsCount",
-              ],
-            ],
-          },
-          group: ["Course.id", "educator.id"], // group by educator ID to avoid errors
-        });
+        const courses = await Course.findAll(commonQuery);
 
         return res.render("student.ejs", {
           courses,
           user,
           csrfToken: req.csrfToken(),
           enrolledCourseIds,
+          searchQuery,
         });
       }
     } else {
@@ -267,10 +257,21 @@ app.get("/dashboard", connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
 
 app.get("/course", connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
   const userId = req.user.id;
+  const searchQuery = req.query.q || "";
 
   try {
+    const whereCondition = {
+      educatorId: userId,
+      ...(searchQuery && {
+        [Op.or]: [
+          { title: { [Op.iLike]: `%${searchQuery}%` } },
+          { description: { [Op.iLike]: `%${searchQuery}%` } },
+        ],
+      }),
+    };
+
     const rawCourses = await Course.findAll({
-      where: { educatorId: userId },
+      where: whereCondition,
       include: [
         {
           model: Enrollment,
@@ -289,7 +290,6 @@ app.get("/course", connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
       group: ["Course.id"],
     });
 
-    // Map studentsCount into course.students for easier EJS rendering
     const courses = rawCourses.map((course) => {
       const plain = course.get({ plain: true });
       plain.students = course.get("studentsCount");
@@ -302,6 +302,7 @@ app.get("/course", connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
         userId,
         user: req.user,
         csrfToken: req.csrfToken(),
+        searchQuery,
       });
     } else {
       return res.json(courses);
@@ -554,6 +555,7 @@ app.post(
 
 app.get("/mycourses", connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
   const userId = req.user.id;
+  const searchQuery = req.query.q?.trim().toLowerCase() || "";
 
   try {
     // Step 1: Get enrolled course IDs
@@ -632,16 +634,27 @@ app.get("/mycourses", connectEnsureLogin.ensureLoggedIn(), async (req, res) => {
 
       const progress =
         totalPages > 0 ? Math.round((completedPages / totalPages) * 100) : 0;
+
       return {
         ...course.get({ plain: true }),
         progress,
       };
     });
 
-    // Step 5: Render page
+    // Step 5: Filter by search query if present
+    const filteredCourses = searchQuery
+      ? courseData.filter(
+          (course) =>
+            course.title.toLowerCase().includes(searchQuery) ||
+            course.description?.toLowerCase().includes(searchQuery),
+        )
+      : courseData;
+
+    // Step 6: Render page
     res.render("studentCourses.ejs", {
       user: req.user,
-      courses: courseData,
+      courses: filteredCourses,
+      searchQuery,
     });
   } catch (error) {
     console.error("Error fetching enrolled courses:", error);
@@ -667,12 +680,12 @@ app.get(
         order: [["order", "ASC"]],
       });
 
-      // ✅ Get all completions for the current user
+      // Get all completions for the current user
       const completions = await Completion.findAll({
         where: { userId },
       });
 
-      // ✅ Extract completed page IDs
+      // Extract completed page IDs
       const completedPageIds = completions.map((comp) => comp.pageId);
 
       res.render("studentView.ejs", {
@@ -680,7 +693,7 @@ app.get(
         chapters,
         pages,
         csrfToken: req.csrfToken(),
-        completedPageIds, // ✅ pass this to the EJS view
+        completedPageIds, //  pass this to the EJS view
       });
     } catch (error) {
       console.error("Error fetching course details:", error);

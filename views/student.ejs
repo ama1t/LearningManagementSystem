@@ -21,13 +21,36 @@
           </a>
         </div>
       </section>
+      <!-- Section Header with Search -->
+<section class="mb-6">
+  <div class="flex justify-between items-center border-b border-purple-600">
+    <!-- Navigation tab style heading -->
+    <nav class="text-lg font-semibold">
+      <span class="text-purple-400   pb-2">Available Courses</span>
+    </nav>
 
-      <!-- Section Header -->
-      <section class="mb-4">
-        <nav class="flex gap-6 px-8 pt-6 border-b border-purple-600 text-lg font-semibold">
-          <span class="text-purple-400 border-b-2 border-purple-400 pb-2">Available Courses</span>
-        </nav>
-      </section>
+    <!-- Search form -->
+    <form method="GET" action="/dashboard" class="flex items-center bg-gray-800 border border-gray-700 px-3 py-1.5 rounded-md focus-within:ring-2 focus-within:ring-purple-500">
+      <input
+        type="text"
+        name="q"
+        value="<%= typeof searchQuery !== 'undefined' ? searchQuery : '' %>"
+        placeholder="Search..."
+        class="bg-transparent text-white focus:outline-none placeholder-gray-400"
+      />
+      <button type="submit" class="ml-2 text-purple-400 hover:text-purple-300">
+        <!-- Custom search icon -->
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+             stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+          <path stroke-linecap="round" stroke-linejoin="round"
+                d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 
+                   5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+        </svg>
+      </button>
+    </form>
+  </div>
+</section>
+
 
       <!-- Available Courses -->
       <section>
@@ -43,33 +66,34 @@
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             <% courses.forEach(course => { %>
               <div class="bg-gray-800 p-4 rounded-lg shadow hover:shadow-lg transition">
-                <!-- Thumbnail image -->
                 <img src="<%= course.imageUrl || '/default-course.jpg' %>" alt="Course Thumbnail"
                      class="w-full h-40 object-cover rounded-md mb-4" />
-
-                <!-- Course Title -->
                 <h3 class="text-lg font-semibold text-white mb-1">
                   <%= course.title %>
                 </h3>
-
-                <!-- Course Description -->
                 <p class="text-sm text-gray-300 mb-2">
                   <%= course.description || "No description available." %>
                 </p>
-
-                <!-- Instructor -->
                 <p class="text-sm text-gray-400 mb-1">
                   Instructor :  <%= course.educator.name || "N/A" %>
                 </p>
-
-                <!-- Students Count -->
                 <p class="text-sm text-gray-400 mb-4">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" class="h-6 w-6 inline-block align-middle pb-1 text-green-400">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
-                  </svg> : <%= course.dataValues?.studentsCount || 0 %> Enrolled
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                       stroke-width="1.5" stroke="currentColor"
+                       class="h-6 w-6 inline-block align-middle pb-1 text-green-400">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M15 19.128a9.38 9.38 0 0 0 2.625.372
+                             9.337 9.337 0 0 0 4.121-.952
+                             4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003
+                             c0-1.113-.285-2.16-.786-3.07M15 19.128v.106
+                             A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766
+                             l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0
+                             1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1
+                             1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
+                  </svg>
+                  : <%= course.dataValues?.studentsCount || 0 %> Enrolled
                 </p>
 
-                <!-- Action Buttons -->
                 <div class="flex gap-2">
                   <a href="/course/<%= course.id %>/view"
                      class="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-md text-white">

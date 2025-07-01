@@ -6,68 +6,123 @@
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-900 text-white">
-
   <!-- Header -->
   <%- include('header.ejs') %>
 
-  
   <!-- Course Grid -->
   <main class="px-6 max-w-6xl mx-auto pt-24">
-    <!-- Navigation Tab -->
-  <nav class="flex gap-6 px-8 pt-6 border-b border-purple-600 text-lg font-semibold">
-    <span class="text-purple-400 border-b-2 border-purple-400 pb-2">Created Courses</span>
-  </nav>
+    
+    <!-- Navigation + Search -->
+    <section class="mb-6">
+      <div class="flex justify-between items-center border-b border-purple-600">
+        <!-- Navigation tab style heading -->
+        <nav class="text-lg font-semibold">
+          <span class="text-purple-400  pb-2">Created Courses</span>
+        </nav>
+    
+        <!-- Search form -->
+        <form method="GET" action="/course" class="flex items-center bg-gray-800 border border-gray-700 px-3 py-1.5 rounded-md focus-within:ring-2 focus-within:ring-purple-500">
+          <input
+            type="text"
+            name="q"
+            value="<%= typeof searchQuery !== 'undefined' ? searchQuery : '' %>"
+            placeholder="Search..."
+            class="bg-transparent text-white focus:outline-none placeholder-gray-400"
+          />
+          <button type="submit" class="ml-2 text-purple-400 hover:text-purple-300">
+            <!-- Custom search icon -->
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                 stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                    d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 
+                       5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+            </svg>
+          </button>
+        </form>
+      </div>
+    </section>
+    
+    
 
+    <!-- No Courses -->
     <% if (courses.length === 0) { %>
       <p class="text-gray-400 mt-6">You haven't created any courses.</p>
     <% } else { %>
+      <!-- Course Cards -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
         <% courses.forEach(course => { %>
           <div class="bg-gray-800 p-4 rounded-lg shadow hover:shadow-lg transition">
             <img src="<%= course.imageUrl %>" alt="Course Image" class="w-full h-40 object-cover rounded mb-4">
             <h3 class="text-lg font-semibold mb-1"><%= course.title %></h3>
             <p class="text-sm text-gray-300 mb-2"><%= course.description %></p>
-            <p class="text-sm text-gray-400 mb-4"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" class="h-6 w-6 inline-block align-middle pb-1 text-green-400">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
-            </svg> : <%= course.students || 0 %> Enrolled</p>
-            
-            <!-- Buttons Section -->
+            <p class="text-sm text-gray-400 mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                   stroke-width="1.5" stroke="currentColor" class="h-6 w-6 inline-block align-middle pb-1 text-green-400">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 
+                      19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 
+                      19.128v.106A12.318 12.318 0 0 1 8.624 
+                      21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 
+                      6.375 0 0 1 11.964-3.07M12 
+                      6.375a3.375 3.375 0 1 1-6.75 0 3.375 
+                      3.375 0 0 1 6.75 0Zm8.25 
+                      2.25a2.625 2.625 0 1 1-5.25 
+                      0 2.625 2.625 0 0 1 5.25 0Z"/>
+              </svg> : <%= course.students || 0 %> Enrolled
+            </p>
+
+            <!-- Actions -->
             <div class="flex justify-between items-center mt-2">
-              <!-- View Button -->
               <a href="/course/<%= course.id %>" class="bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-md text-white">
                 View
               </a>
 
-              <!-- Edit and Delete Icons -->
               <div class="flex gap-4 items-center">
                 <!-- Edit -->
                 <a href="/course/<%= course.id %>/edit" class="text-gray-300 hover:text-yellow-400" title="Edit Course">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                       stroke-width="1.5" stroke="currentColor" class="size-6">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="m16.862 4.487 1.687-1.688a1.875 
+                          1.875 0 1 1 2.652 2.652L10.582 
+                          16.07a4.5 4.5 0 0 1-1.897 
+                          1.13L6 18l.8-2.685a4.5 4.5 0 0 
+                          1 1.13-1.897l8.932-8.931Zm0 
+                          0L19.5 7.125M18 
+                          14v4.75A2.25 2.25 0 0 1 15.75 
+                          21H5.25A2.25 2.25 0 0 1 3 
+                          18.75V8.25A2.25 2.25 0 0 1 5.25 
+                          6H10"/>
                   </svg>
                 </a>
 
                 <!-- Delete -->
                 <form action="/course/<%= course.id %>/delete" method="POST" class="inline"
-                  onsubmit="return confirm('Are you sure you want to delete this course?')">
-              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-              <button type="submit" class="text-red-400 hover:text-red-600 mt-1.5" title="Delete Course">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24"
-                     stroke-width="1.5" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166M18.16 19.673A2.25 2.25 0 0115.916 21H8.084A2.25 2.25 0 015.84 19.673L4.772 5.79m14.456 0a48.11 48.11 0 00-3.478-.397m-12 .562a48.11 48.11 0 013.478-.397m7.5 0v-.916A2.25 2.25 0 0013.41 2.25a51.964 51.964 0 00-3.32 0A2.25 2.25 0 008 3.979v.916" />
-                </svg>
-              </button>
-            </form>
-            
+                      onsubmit="return confirm('Are you sure you want to delete this course?')">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                  <button type="submit" class="text-red-400 hover:text-red-600 mt-1.5" title="Delete Course">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24"
+                         stroke-width="1.5" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M14.74 9l-.346 9m-4.788 
+                            0L9.26 9m9.968-3.21c.342.052.682.107 
+                            1.022.166M18.16 19.673A2.25 2.25 0 
+                            0115.916 21H8.084A2.25 2.25 0 015.84 
+                            19.673L4.772 5.79m14.456 
+                            0a48.11 48.11 0 00-3.478-.397m-12 
+                            .562a48.11 48.11 0 013.478-.397m7.5 
+                            0v-.916A2.25 2.25 0 0013.41 
+                            2.25a51.964 51.964 0 00-3.32 
+                            0A2.25 2.25 0 008 3.979v.916"/>
+                    </svg>
+                  </button>
+                </form>
               </div>
             </div>
-
           </div>
-        <% }); %>
+        <% }) %>
       </div>
     <% } %>
   </main>
-
 </body>
 </html>

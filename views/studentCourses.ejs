@@ -14,9 +14,34 @@
   <!-- Course Grid -->
   <main class="px-6 pt-24 max-w-6xl mx-auto">
      <!-- Navigation -->
-  <nav class="flex gap-6 px-8 pt-6 border-b border-purple-600 text-lg font-semibold">
-    <span class="text-purple-400 border-b-2 border-purple-400 pb-2">Enrolled Courses</span>
-  </nav>
+     <section class="mb-6">
+      <div class="flex justify-between items-center border-b border-purple-600">
+        <!-- Navigation tab style heading -->
+        <nav class="text-lg font-semibold">
+          <span class="text-purple-400   pb-2">Enrolled Courses</span>
+        </nav>
+    
+        <!-- Search form -->
+        <form method="GET" action="/mycourses" class="flex items-center bg-gray-800 border border-gray-700 px-3 py-1.5 rounded-md focus-within:ring-2 focus-within:ring-purple-500">
+          <input
+            type="text"
+            name="q"
+            value="<%= typeof searchQuery !== 'undefined' ? searchQuery : '' %>"
+            placeholder="Search..."
+            class="bg-transparent text-white focus:outline-none placeholder-gray-400"
+          />
+          <button type="submit" class="ml-2 text-purple-400 hover:text-purple-300">
+            <!-- Custom search icon -->
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                 stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                    d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 
+                       5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+            </svg>
+          </button>
+        </form>
+      </div>
+    </section>
     <% if (courses.length === 0) { %>
       <p class="text-gray-400 mt-6">You're not enrolled in any courses yet.</p>
     <% } else { %>
