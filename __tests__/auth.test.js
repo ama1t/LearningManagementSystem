@@ -75,10 +75,6 @@ describe("Authentication Flow", () => {
       _csrf: csrfToken,
     });
 
-    console.log("Status:", res.statusCode);
-    console.log("Location:", res.header.location);
-    console.log("Body:", res.text);
-
     expect(res.statusCode).toBe(302);
     expect(res.header.location).toBe("/login");
   });
@@ -90,6 +86,7 @@ describe("Authentication Flow", () => {
   });
 
   test("POST /changepassword should update the password", async () => {
+    // Login again first
     const csrfLogin = await getCsrfToken(agent, "/login");
     await agent.post("/session").type("form").send({
       email: "test@example.com",
@@ -109,8 +106,10 @@ describe("Authentication Flow", () => {
     expect(res.statusCode).toBe(302);
     expect(res.header.location).toBe("/dashboard");
 
+    // Logout
     await agent.get("/signout");
 
+    // Login with new password
     const csrfNewLogin = await getCsrfToken(agent, "/login");
     const loginResponse = await agent.post("/session").type("form").send({
       email: "test@example.com",
