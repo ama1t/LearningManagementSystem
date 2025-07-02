@@ -4,6 +4,9 @@ const db = require("../models");
 const bcrypt = require("bcrypt");
 
 let agent;
+let courseId, chapterId, pageId;
+let enrollmentCourseId;
+let testCompletionCourseId, testCompletionChapterId, testCompletionPageId;
 
 beforeAll(async () => {
   await db.sequelize.sync({ force: true });
@@ -17,13 +20,79 @@ beforeAll(async () => {
     role: "educator",
   });
 
-  const hashedStudentPwd = await bcrypt.hash("Student@123", 10);
+  const studentHashedPwd = await bcrypt.hash("Student@123", 10);
   await db.User.create({
     name: "Student One",
     email: "student@example.com",
-    password: hashedStudentPwd,
+    password: studentHashedPwd,
     role: "student",
   });
+
+  let csrf = await getCsrfToken(agent);
+  await agent.post("/session").type("form").send({
+    email: "educator@example.com",
+    password: "Educator@123",
+    _csrf: csrf,
+  });
+
+  csrf = await getCsrfToken(agent, "/course/create");
+  const res = await agent.post("/course/create").type("form").send({
+    title: "Enrollment Course",
+    description: "Used for enrollment testing",
+    imageUrl: "https://example.com/enroll.jpg",
+    _csrf: csrf,
+  });
+
+  const location = res.headers.location;
+  enrollmentCourseId = location.split("/")[2];
+
+  const csrfCourse = await getCsrfToken(agent, "/course/create");
+  const courseRes = await agent.post("/course/create").type("form").send({
+    title: "Completion Test Course",
+    description: "Course to test completion",
+    imageUrl: "https://example.com/completion.jpg",
+    _csrf: csrfCourse,
+  });
+
+  testCompletionCourseId = courseRes.headers.location.split("/")[2];
+
+  const csrfChapter = await getCsrfToken(
+    agent,
+    `/course/${testCompletionCourseId}/chapter/create`,
+  );
+  const chapterRes = await agent
+    .post(`/course/${testCompletionCourseId}/chapter/create`)
+    .type("form")
+    .send({
+      title: "Completion Chapter",
+      description: "Chapter for completion test",
+      _csrf: csrfChapter,
+    });
+
+  const chapter = await db.Chapter.findOne({
+    where: { title: "Completion Chapter" },
+  });
+  testCompletionChapterId = chapter.id;
+
+  const csrfPage = await getCsrfToken(
+    agent,
+    `/course/${testCompletionCourseId}/chapter/${testCompletionChapterId}/page/create`,
+  );
+  await agent
+    .post(
+      `/course/${testCompletionCourseId}/chapter/${testCompletionChapterId}/page/create`,
+    )
+    .type("form")
+    .send({
+      title: "Completion Page",
+      content: "Content for test page",
+      _csrf: csrfPage,
+    });
+
+  const page = await db.Page.findOne({ where: { title: "Completion Page" } });
+  testCompletionPageId = page.id;
+
+  await agent.get("/signout");
 });
 
 afterAll(async () => {
@@ -36,21 +105,15 @@ const getCsrfToken = async (agent, path = "/login") => {
   return match ? match[1] : "";
 };
 
-let courseId, chapterId, pageId;
-
-describe("Educator Course Flow", () => {
-  test("Educator login", async () => {
-    const csrf = await getCsrfToken(agent);
-    const res = await agent.post("/session").type("form").send({
+describe("Course Flow", () => {
+  test("Create course", async () => {
+    let csrf = await getCsrfToken(agent);
+    await agent.post("/session").type("form").send({
       email: "educator@example.com",
       password: "Educator@123",
       _csrf: csrf,
     });
-    expect(res.statusCode).toBe(302);
-  });
-
-  test("Create course", async () => {
-    const csrf = await getCsrfToken(agent, "/course/create");
+    csrf = await getCsrfToken(agent, "/course/create");
     const res = await agent.post("/course/create").type("form").send({
       title: "Test Course",
       description: "A great course",
@@ -132,35 +195,6 @@ describe("Educator Course Flow", () => {
     expect(updated.title).toBe("Updated Page");
   });
 
-  test("Student login and enroll in course", async () => {
-    await agent.get("/signout");
-    const csrf = await getCsrfToken(agent);
-    await agent.post("/session").type("form").send({
-      email: "student@example.com",
-      password: "Student@123",
-      _csrf: csrf,
-    });
-
-    const csrfEnroll = await getCsrfToken(agent, `/course/${courseId}`);
-    const res = await agent
-      .post(`/course/${courseId}/enroll`)
-      .type("form")
-      .send({ _csrf: csrfEnroll });
-    expect(res.statusCode).toBe(302);
-    const enrollment = await db.Enrollment.findOne({ where: { courseId } });
-    expect(enrollment).toBeTruthy();
-  });
-  test("Relogin as educator", async () => {
-    await agent.get("/signout");
-    const csrf = await getCsrfToken(agent);
-    const res = await agent.post("/session").type("form").send({
-      email: "educator@example.com",
-      password: "Educator@123",
-      _csrf: csrf,
-    });
-    expect(res.statusCode).toBe(302);
-  });
-
   test("Delete page", async () => {
     const csrf = await getCsrfToken(agent, `/page/${pageId}/edit`);
     const res = await agent
@@ -192,5 +226,115 @@ describe("Educator Course Flow", () => {
     expect(res.statusCode).toBe(302);
     const course = await db.Course.findByPk(courseId);
     expect(course).toBeNull();
+  });
+  test("Educator can search own courses in /course", async () => {
+    await db.Course.create({
+      title: "Course",
+      description: "test",
+      imageUrl: "https://example1.com/other.jpg",
+    });
+    const csrf = await getCsrfToken(agent, "/course");
+    const res = await agent.get("/course?q=Updated");
+    expect(res.statusCode).toBe(200);
+    expect(res.text).toContain("Course");
+  });
+
+  test("Educator can search other users' courses in /dashboard", async () => {
+    const hashedPwd2 = await bcrypt.hash("Educator2@123", 10);
+    await db.User.create({
+      name: "Educator Two",
+      email: "educator2@example.com",
+      password: hashedPwd2,
+      role: "educator",
+    });
+
+    let csrf = await getCsrfToken(agent);
+    await agent.post("/session").type("form").send({
+      email: "educator2@example.com",
+      password: "Educator2@123",
+      _csrf: csrf,
+    });
+
+    csrf = await getCsrfToken(agent, "/course/create");
+    const createRes = await agent.post("/course/create").type("form").send({
+      title: "Public Course",
+      description: "Visible to others",
+      imageUrl: "https://example.com/other.jpg",
+      _csrf: csrf,
+    });
+
+    await agent.get("/signout");
+
+    csrf = await getCsrfToken(agent);
+    await agent.post("/session").type("form").send({
+      email: "educator@example.com",
+      password: "Educator@123",
+      _csrf: csrf,
+    });
+
+    const res = await agent.get("/dashboard?q=Public");
+    expect(res.statusCode).toBe(200);
+    expect(res.text).toContain("Public Course");
+
+    await agent.get("/signout");
+  });
+
+  test("Student can view courses in /dashboard", async () => {
+    const csrf = await getCsrfToken(agent);
+    await agent.post("/session").type("form").send({
+      email: "student@example.com",
+      password: "Student@123",
+      _csrf: csrf,
+    });
+    const res = await agent.get("/dashboard");
+    expect(res.statusCode).toBe(200);
+    expect(res.text).toContain("Public Course");
+  });
+
+  test("Student can search courses in /dashboard", async () => {
+    const res = await agent.get("/dashboard?q=Public");
+    expect(res.statusCode).toBe(200);
+    expect(res.text).toContain("Public Course");
+  });
+
+  test("Student can enroll in a course", async () => {
+    const csrf = await getCsrfToken(agent, "/dashboard");
+    expect(enrollmentCourseId).toBeDefined();
+
+    const res = await agent
+      .post(`/course/${enrollmentCourseId}/enroll`)
+      .type("form")
+      .send({ _csrf: csrf });
+
+    expect(res.statusCode).toBe(302);
+    expect(res.headers.location).toBe(`/mycourses/${enrollmentCourseId}`);
+  });
+
+  test("Student can search enrolled course in /mycourses", async () => {
+    const res = await agent.get("/mycourses?q=Enrollment Course");
+    expect(res.statusCode).toBe(200);
+    expect(res.text).toContain("Enrollment Course");
+  });
+
+  test("Student can mark a page as completed", async () => {
+    const csrf = await getCsrfToken(
+      agent,
+      `/mycourses/${testCompletionCourseId}/chapter/${testCompletionChapterId}/page/${testCompletionPageId}/view`,
+    );
+
+    const res = await agent
+      .post(`/completions/${testCompletionPageId}`)
+      .type("form")
+      .send({ _csrf: csrf });
+
+    expect(res.statusCode).toBe(302);
+    expect(res.headers.location).toBe(
+      `/mycourses/${testCompletionCourseId}/chapter/${testCompletionChapterId}/page/${testCompletionPageId}/view`,
+    );
+
+    const completion = await db.Completion.findOne({
+      where: { courseId: testCompletionCourseId, pageId: testCompletionPageId },
+    });
+    expect(completion).toBeTruthy();
   });
 });

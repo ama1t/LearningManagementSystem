@@ -539,6 +539,11 @@ app.post(
   connectEnsureLogin.ensureLoggedIn(),
   async (req, res) => {
     const courseId = req.params.courseId;
+    if (!req.user) {
+      console.error("No user in session");
+      return res.status(401).send("Unauthorized");
+    }
+
     const userId = req.user.id;
 
     try {

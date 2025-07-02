@@ -75,7 +75,7 @@
                   <%= course.description || "No description available." %>
                 </p>
                 <p class="text-sm text-gray-400 mb-1">
-                  Instructor :  <%= course.educator.name || "N/A" %>
+                  Instructor: <%= course.educator ? course.educator.name : "N/A" %>
                 </p>
                 <p class="text-sm text-gray-400 mb-4">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
