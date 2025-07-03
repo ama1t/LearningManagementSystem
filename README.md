@@ -13,3 +13,4 @@ screenshots:-
 ![educator course page](https://github.com/ama1t/LearningManagementSystem/blob/main/Screenshot%202025-07-03%20203116.png)
 ![educator chapter view](https://github.com/ama1t/LearningManagementSystem/blob/main/Screenshot%202025-07-03%20203146.png)
 ![educator page view](https://github.com/ama1t/LearningManagementSystem/blob/main/Screenshot%202025-07-03%20203200.png)
+![student course page](https://github.com/ama1t/LearningManagementSystem/blob/main/Screenshot%202025-07-03%20203242.png)
