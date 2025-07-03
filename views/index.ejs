@@ -18,23 +18,20 @@
   </head>
   <body class="bg-gray-950 text-white">
     <!-- Header -->
-    <!-- Header -->
     <header class="bg-gray-900 shadow-md w-full">
-      <div class="px-4 sm:px-6 py-4 flex justify-between items-center">
-        <h1
-          class="text-xl sm:text-2xl font-bold text-purple-500 tracking-tight"
-        >
+      <div class="px-4 sm:px-6 lg:px-10 py-4 flex justify-between items-center">
+        <h1 class="text-2xl font-bold text-purple-500">
           Learning Management System
         </h1>
-        <nav class="space-x-4">
+        <nav class="flex gap-4">
           <a
             href="/login"
-            class="text-purple-400 hover:underline transition duration-150 ease-in-out"
+            class="text-purple-400 hover:underline transition duration-150 ease-in-out text-base pt-2"
             >Sign In</a
           >
           <a
             href="/signup"
-            class="inline-block bg-purple-600 hover:bg-purple-700 text-white font-semibold px-4 py-2 rounded transition duration-150"
+            class="bg-purple-600 hover:bg-purple-700 text-white font-semibold px-4 py-2 rounded transition duration-150 text-base"
           >
             Sign Up
           </a>
@@ -43,21 +40,23 @@
     </header>
 
     <!-- Hero Section -->
-    <main class="flex items-center justify-center h-[calc(100vh-80px)] px-4">
+    <main
+      class="flex items-center justify-center min-h-[calc(100vh-80px)] px-4 sm:px-6 lg:px-8"
+    >
       <div class="text-center max-w-2xl">
         <h2
-          class="text-5xl sm:text-6xl font-extrabold text-purple-400 mb-6 leading-tight"
+          class="text-4xl sm:text-5xl md:text-6xl font-extrabold text-purple-400 mb-6 leading-tight"
         >
           Welcome to Your<br />
           <span class="text-white">Learning Management System</span>
         </h2>
-        <p class="text-lg text-gray-400 mb-8">
+        <p class="text-base sm:text-lg text-gray-400 mb-8">
           A simple, powerful way to manage your courses and track learning
           progress.
         </p>
         <a
           href="/signup"
-          class="bg-indigo-600 hover:bg-indigo-700 text-white text-lg font-semibold px-6 py-3 rounded-lg shadow-md transition duration-200"
+          class="bg-indigo-600 hover:bg-indigo-700 text-white text-base sm:text-lg font-semibold px-6 py-3 rounded-lg shadow-md transition duration-200"
         >
           Get Started
         </a>
