@@ -15,3 +15,6 @@ screenshots:-
 ![educator page view](https://github.com/ama1t/LearningManagementSystem/blob/main/Screenshot%202025-07-03%20203200.png)
 ![student course page](https://github.com/ama1t/LearningManagementSystem/blob/main/Screenshot%202025-07-03%20203242.png)
 ![student course view](https://github.com/ama1t/LearningManagementSystem/blob/main/Screenshot%202025-07-03%20203300.png)
+
+application url:-
+[app_url](https://amals-lms.onrender.com/)
