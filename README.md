@@ -18,3 +18,5 @@ screenshots:-
 
 application url:-
 [Learning management system](https://amals-lms.onrender.com/)
+
+[Demo vedio](https://www.loom.com/share/f17322fac0574cefbbe68edd5e640316?sid=40cf92cd-9749-46be-91d6-4f61ff8b4627)
