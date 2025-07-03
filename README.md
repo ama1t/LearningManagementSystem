@@ -10,3 +10,4 @@ the progresion is increse by completing reading pages of the courses
 screenshots:-
 
 ![home page](https://github.com/ama1t/LearningManagementSystem/blob/main/Screenshot%202025-07-03%20202544.png)
+![educator course page](https://github.com/ama1t/LearningManagementSystem/blob/main/Screenshot%202025-07-03%20203116.png)
