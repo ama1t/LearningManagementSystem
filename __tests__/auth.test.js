@@ -53,6 +53,7 @@ describe("Authentication Flow", () => {
       role: "student",
       _csrf: csrfToken,
     });
+
     expect(res.header.location).toBe("/signup");
   });
 
@@ -74,7 +75,6 @@ describe("Authentication Flow", () => {
       password: "WrongPassword",
       _csrf: csrfToken,
     });
-
     expect(res.statusCode).toBe(302);
     expect(res.header.location).toBe("/login");
   });
@@ -85,40 +85,45 @@ describe("Authentication Flow", () => {
     expect(res.header.location).toBe("/");
   });
 
-  test("POST /changepassword should update the password", async () => {
-    // Login again first
-    const csrfLogin = await getCsrfToken(agent, "/login");
-    await agent.post("/session").type("form").send({
-      email: "test@example.com",
-      password: "Password@123",
-      _csrf: csrfLogin,
+  describe("Change Password", () => {
+    beforeEach(async () => {
+      const csrfLogin = await getCsrfToken(agent, "/login");
+      await agent.post("/session").type("form").send({
+        email: "test@example.com",
+        password: "Password@123",
+        _csrf: csrfLogin,
+      });
     });
 
-    const csrf = await getCsrfToken(agent, "/changepassword");
-
-    const res = await agent.post("/changepassword").type("form").send({
-      currentPassword: "Password@123",
-      newPassword: "NewPassword@123",
-      confirmPassword: "NewPassword@123",
-      _csrf: csrf,
+    afterEach(async () => {
+      await agent.get("/signout");
     });
 
-    expect(res.statusCode).toBe(302);
-    expect(res.header.location).toBe("/dashboard");
+    test("should change password successfully", async () => {
+      const csrf = await getCsrfToken(agent, "/changepassword");
+      const res = await agent.post("/changepassword").type("form").send({
+        currentPassword: "Password@123",
+        newPassword: "NewPassword@123",
+        confirmPassword: "NewPassword@123",
+        _csrf: csrf,
+      });
 
-    // Logout
-    await agent.get("/signout");
+      expect(res.statusCode).toBe(302);
+      expect(res.header.location).toBe("/dashboard");
 
-    // Login with new password
-    const csrfNewLogin = await getCsrfToken(agent, "/login");
-    const loginResponse = await agent.post("/session").type("form").send({
-      email: "test@example.com",
-      password: "NewPassword@123",
-      _csrf: csrfNewLogin,
+      // Logout and login with new password
+      await agent.get("/signout");
+
+      const csrfNewLogin = await getCsrfToken(agent, "/login");
+      const loginRes = await agent.post("/session").type("form").send({
+        email: "test@example.com",
+        password: "NewPassword@123",
+        _csrf: csrfNewLogin,
+      });
+
+      expect(loginRes.statusCode).toBe(302);
+      expect(loginRes.header.location).toBe("/dashboard");
     });
-
-    expect(loginResponse.statusCode).toBe(302);
-    expect(loginResponse.header.location).toBe("/dashboard");
   });
 });
 
