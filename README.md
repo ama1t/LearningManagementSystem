@@ -2,9 +2,6 @@
 
 A fully functional Learning Management System where educators can create courses, add chapters and pages, and students can enroll, track progress, and mark content as completed.
 
-> Live url: [amals-lms.onrender.com](https://amals-lms.onrender.com)
-> Demo vedio: [watch](https://amals-lms.onrender.com)
-
 ---
 
 # Features
@@ -17,7 +14,7 @@ A fully functional Learning Management System where educators can create courses
     - Delete course,chapter,page  
     - View report
     - View other educators courses(Can't be enroll)
-- Student Can:-
+- Student can:-
     - Browse and enroll in courses
     - View content and mark pages as read
     - View completion progress
@@ -31,5 +28,9 @@ A fully functional Learning Management System where educators can create courses
 # Screenshots
 
 > ![Index page](screenshots/dashboard.png)
+
+
+> Live url: [amals-lms.onrender.com](https://amals-lms.onrender.com)
+> Demo vedio: [watch](https://amals-lms.onrender.com)
 
 ---
