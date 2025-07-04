@@ -1,22 +1,35 @@
-This is an online learning management system built using node.js which allows,
-educators to signup, create courses and add chapters and pages for every course.
-Also educators can edit course,chapter and page also they can delete unwated chapters or pages or courses.
-Also educators can view the reports of each course.
-Students can signup and view courses that available
-and enroll courses they need.
-Students can view progresion on each courses,
-the progresion is increse by completing or reading pages of the courses.
+#  Learning Management System (LMS)
 
-screenshots:-
+A fully functional Learning Management System where educators can create courses, add chapters and pages, and students can enroll, track progress, and mark content as completed.
 
-![home page](https://github.com/ama1t/LearningManagementSystem/blob/main/Screenshot%202025-07-03%20202544.png)
-![educator course page](https://github.com/ama1t/LearningManagementSystem/blob/main/Screenshot%202025-07-03%20203116.png)
-![educator chapter view](https://github.com/ama1t/LearningManagementSystem/blob/main/Screenshot%202025-07-03%20203146.png)
-![educator page view](https://github.com/ama1t/LearningManagementSystem/blob/main/Screenshot%202025-07-03%20203200.png)
-![student course page](https://github.com/ama1t/LearningManagementSystem/blob/main/Screenshot%202025-07-03%20203242.png)
-![student course view](https://github.com/ama1t/LearningManagementSystem/blob/main/Screenshot%202025-07-03%20203300.png)
+> Live url: [amals-lms.onrender.com](https://amals-lms.onrender.com)
+> Demo vedio: [watch](https://amals-lms.onrender.com)
 
-application url:-
-[Learning management system](https://amals-lms.onrender.com/)
+---
 
-[Demo vedio](https://www.loom.com/share/f17322fac0574cefbbe68edd5e640316?sid=40cf92cd-9749-46be-91d6-4f61ff8b4627)
+# Features
+
+- User(Educator or Student) authentication (Sign up / Sign in)
+- Educator can:-
+    - Create and manage courses
+    - Add chapters and pages
+    - Edit course,chapter,page
+    - Delete course,chapter,page  
+    - View report
+    - View other educators courses(Can't be enroll)
+- Student Can:-
+    - Browse and enroll in courses
+    - View content and mark pages as read
+    - View completion progress
+-  Search functionality for all users
+-  Users can change password
+-  CSRF protection & session handling
+-  Clean and responsive UI using **Tailwind CSS**
+
+---
+
+# Screenshots
+
+> ![Index page](screenshots/dashboard.png)
+
+---
