@@ -4,7 +4,7 @@ Also educators can edit course,chapter and page also they can delete unwated cha
 Also educators can view the reports of each course.
 Students can signup and view courses that available
 and enroll courses they need.
-Students can view progresion on each courses, 
+Students can view progresion on each courses,
 the progresion is increse by completing or reading pages of the courses.
 
 screenshots:-

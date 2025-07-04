@@ -72,7 +72,7 @@ describe("Dashboard Access", () => {
     const dashboardRes = await agent.get("/dashboard");
     expect(dashboardRes.statusCode).toBe(200);
     expect(dashboardRes.text).toContain("Create a new course"); // Specific to educator view
-    expect(dashboardRes.text).toContain("View reports");
+    expect(dashboardRes.text).toContain("View Reports");
   });
 
   test("GET /dashboard should redirect if user not logged in", async () => {

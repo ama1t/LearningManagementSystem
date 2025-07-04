@@ -220,9 +220,15 @@ describe("Course Flow", () => {
       password: "Educator@123",
       _csrf: csrf,
     });
-    const res = await agent.get("/course?q=Updated");
+    await agent.post("/course/create").type("form").send({
+      title: "My Course",
+      description: "My created course",
+      imageUrl: "https://example7.com/other.jpg",
+      _csrf: csrf,
+    });
+    const res = await agent.get("/course?q=My Course");
     expect(res.statusCode).toBe(200);
-    expect(res.text).toContain("Updated Course");
+    expect(res.text).toContain("My Course");
   });
 
   test("Educator can search other users' courses in /dashboard", async () => {
