@@ -29,6 +29,9 @@ A fully functional Learning Management System where educators can create courses
 
 > ![Index page](https://github.com/ama1t/LearningManagementSystem/blob/main/Screenshot%202025-07-05%20000559.png)
 > ![Educator dashboard](https://github.com/ama1t/LearningManagementSystem/blob/main/Screenshot%202025-07-05%20000637.png)
+> ![Educator course](https://github.com/ama1t/LearningManagementSystem/blob/main/Screenshot%202025-07-05%20002903.png)
+> ![Student dashboard](https://github.com/ama1t/LearningManagementSystem/blob/main/Screenshot%202025-07-05%20003020.png)
+> ![Course view](https://github.com/ama1t/LearningManagementSystem/blob/main/Screenshot%202025-07-05%20003115.png)
 
 
 ## Demo
