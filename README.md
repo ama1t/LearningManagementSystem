@@ -4,7 +4,7 @@ A fully functional Learning Management System where educators can create courses
 
 ---
 
-# Features
+## Features
 
 - User(Educator or Student) authentication (Sign up / Sign in)
 - Educator can:-
@@ -25,10 +25,12 @@ A fully functional Learning Management System where educators can create courses
 
 ---
 
-# Screenshots
+## Screenshots
 
 > ![Index page](screenshots/dashboard.png)
 
+
+## Demo
 
 > Live url: [amals-lms.onrender.com](https://amals-lms.onrender.com)
 > Demo vedio: [watch](https://amals-lms.onrender.com)
