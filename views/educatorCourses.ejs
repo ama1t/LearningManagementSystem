@@ -2,25 +2,26 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Manage Courses | LMS</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-900 text-white">
+<body class="bg-gray-950 text-white font-sans">
   <!-- Header -->
   <%- include('header.ejs') %>
 
-  <!-- Course Grid -->
-  <main class="px-6 max-w-6xl mx-auto pt-24">
+  <!-- Main Content -->
+  <main class="pt-28 px-4 sm:px-6 max-w-7xl mx-auto pb-16">
     
-    <!-- Navigation + Search -->
+    <!-- Section Header with Search -->
     <section class="mb-6">
-      <div class="flex justify-between items-center border-b border-purple-600">
-        <!-- Navigation tab style heading -->
-        <nav class="text-lg font-semibold">
-          <span class="text-purple-400  pb-2">Created Courses</span>
-        </nav>
-    
-        <!-- Search form -->
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-purple-600 pb-2">
+        <!-- Section Heading -->
+        <h2 class="text-lg sm:text-xl font-semibold text-purple-400">
+          Created Courses
+        </h2>
+
+        <!-- Search -->
         <form method="GET" action="/course" class="flex items-center bg-gray-800 border border-gray-700 px-3 py-1.5 rounded-md focus-within:ring-2 focus-within:ring-purple-500">
           <input
             type="text"
@@ -30,7 +31,6 @@
             class="bg-transparent text-white focus:outline-none placeholder-gray-400"
           />
           <button type="submit" class="ml-2 text-purple-400 hover:text-purple-300">
-            <!-- Custom search icon -->
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                  stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
               <path stroke-linecap="round" stroke-linejoin="round"
@@ -41,64 +41,55 @@
         </form>
       </div>
     </section>
-    
-    
 
-    <!-- No Courses -->
+    <!-- Course Cards -->
     <% if (courses.length === 0) { %>
       <p class="text-gray-400 mt-6">You haven't created any courses.</p>
     <% } else { %>
-      <!-- Course Cards -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         <% courses.forEach(course => { %>
-          <div class="bg-gray-800 p-4 rounded-lg shadow hover:shadow-lg transition">
-            <img src="<%= course.imageUrl %>" alt="Course Image" class="w-full h-40 object-cover rounded mb-4">
-            <h3 class="text-lg font-semibold mb-1"><%= course.title %></h3>
-            <p class="text-sm text-gray-300 mb-2"><%= course.description %></p>
+          <div class="bg-gray-800 p-4 rounded-xl shadow-lg hover:shadow-xl transition">
+            <!-- Course Image -->
+            <img src="<%= course.imageUrl || '/default-course.jpg' %>" alt="Course Image" class="w-full h-40 object-cover rounded-md mb-4" />
+
+            <!-- Course Title -->
+            <h3 class="text-lg font-semibold mb-1 text-white">
+              <%= course.title %>
+            </h3>
+
+            <!-- Description -->
+            <p class="text-sm text-gray-300 mb-3 line-clamp-3">
+              <%= course.description || "No description provided." %>
+            </p>
+
+            <!-- Enrollment Info -->
             <p class="text-sm text-gray-400 mb-4">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                   stroke-width="1.5" stroke="currentColor" class="h-6 w-6 inline-block align-middle pb-1 text-green-400">
-                <path stroke-linecap="round" stroke-linejoin="round"
-                      d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 
-                      19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 
-                      19.128v.106A12.318 12.318 0 0 1 8.624 
-                      21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 
-                      6.375 0 0 1 11.964-3.07M12 
-                      6.375a3.375 3.375 0 1 1-6.75 0 3.375 
-                      3.375 0 0 1 6.75 0Zm8.25 
-                      2.25a2.625 2.625 0 1 1-5.25 
-                      0 2.625 2.625 0 0 1 5.25 0Z"/>
-              </svg> : <%= course.students || 0 %> Enrolled
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block text-green-400 mr-1 pb-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                      d="M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 
+                         0-4.512-.645-6.374-1.766l-.001-.109a6.375 
+                         6.375 0 0 1 11.964-3.07M12 6.375a3.375 
+                         3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 
+                         0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 
+                         0 2.625 2.625 0 0 1 5.25 0Z"/>
+              </svg>
+              <%= course.students || 0 %> Enrolled
             </p>
 
             <!-- Actions -->
-            <div class="flex justify-between items-center mt-2">
-              <a href="/course/<%= course.id %>" class="bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-md text-white">
+            <div class="flex justify-between items-center">
+              <a href="/course/<%= course.id %>" class="bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-md text-white text-sm">
                 View
               </a>
-
-              <div class="flex gap-4 items-center">
+              <div class="flex gap-3 items-center">
                 <!-- Edit -->
-                <a href="/course/<%= course.id %>/edit" class="text-gray-300 hover:text-yellow-400" title="Edit Course">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                       stroke-width="1.5" stroke="currentColor" class="size-6">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                          d="m16.862 4.487 1.687-1.688a1.875 
-                          1.875 0 1 1 2.652 2.652L10.582 
-                          16.07a4.5 4.5 0 0 1-1.897 
-                          1.13L6 18l.8-2.685a4.5 4.5 0 0 
-                          1 1.13-1.897l8.932-8.931Zm0 
-                          0L19.5 7.125M18 
-                          14v4.75A2.25 2.25 0 0 1 15.75 
-                          21H5.25A2.25 2.25 0 0 1 3 
-                          18.75V8.25A2.25 2.25 0 0 1 5.25 
-                          6H10"/>
-                  </svg>
+                <a href="/course/<%= course.id %>/edit" class="text-gray-300 hover:text-yellow-400" title="Edit">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
+                    </svg>
                 </a>
-
                 <!-- Delete -->
-                <form action="/course/<%= course.id %>/delete" method="POST" class="inline"
-                      onsubmit="return confirm('Are you sure you want to delete this course?')">
+                <form action="/course/<%= course.id %>/delete" method="POST" onsubmit="return confirm('Are you sure you want to delete this course?')">
                   <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                   <button type="submit" class="text-red-400 hover:text-red-600 mt-1.5" title="Delete Course">
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24"

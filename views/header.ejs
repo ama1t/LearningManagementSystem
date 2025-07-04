@@ -1,26 +1,29 @@
 <!-- Fixed Header -->
 <header
-  class="fixed top-0 left-0 right-0 z-50 flex justify-between items-center px-6 py-4 bg-gray-800 shadow-lg text-white "
+  class="fixed top-0 left-0 right-0 z-50 flex justify-between items-center px-4 sm:px-6 py-3 sm:py-4 bg-gray-900 shadow-lg text-white"
 >
   <!-- Logo + Title -->
   <div class="flex items-center gap-2">
-    <div class="text-xl font-bold text-purple-500">
+    <div class="text-lg sm:text-xl font-bold text-purple-500">
       Learning Management System
     </div>
   </div>
 
   <!-- Navigation -->
-  <div class="flex items-center gap-6">
+  <div class="flex items-center gap-4 sm:gap-6">
     <% if (messages.success && messages.success.length > 0) { %>
-      <span class="text-green-400 text-sm"><%= messages.success[0] %></span>
-    <% } %>    
-    <a href="/dashboard" class="hover:text-purple-400 font-medium">Dashboard</a>
+      <span class="text-green-400 text-xs sm:text-sm"><%= messages.success[0] %></span>
+    <% } %>
+
+    <a href="/dashboard" class="hover:text-purple-400 font-medium text-sm sm:text-base">Dashboard</a>
 
     <!-- User Menu -->
     <div class="relative">
       <button
         id="profileBtn"
-        class="w-10 h-10 rounded-full bg-purple-500 flex items-center justify-center font-semibold text-white focus:outline-none"
+        aria-haspopup="true"
+        aria-expanded="false"
+        class="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-purple-500 flex items-center justify-center font-semibold text-white focus:outline-none focus:ring-2 focus:ring-purple-400"
       >
         <%= user.name.slice(0, 2).toUpperCase() %>
       </button>
@@ -28,26 +31,17 @@
       <!-- Dropdown menu -->
       <div
         id="dropdownMenu"
-        class="absolute right-0 mt-2 w-48 bg-gray-800 rounded-md shadow-lg border border-gray-700 z-50 hidden"
+        class="absolute right-0 mt-2 w-44 sm:w-48 bg-gray-800 rounded-md shadow-lg border border-gray-700 z-50 hidden"
       >
         <a
           href="/changepassword"
           class="px-4 py-2 block hover:bg-gray-700 text-sm flex items-center gap-2"
         >
           <!-- Change Password Icon -->
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-4 w-4"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M12 11c0-.556.224-1.056.586-1.414A2 2 0 0116 10a2 2 0 012 2v1h-8v-1c0-.556.224-1.056.586-1.414A2 2 0 0112 11zm-6 4h16v5a2 2 0 01-2 2H4a2 2 0 01-2-2v-5h4zm6-10a3 3 0 100 6 3 3 0 000-6z"
-            />
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+               viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M12 11c0-.556.224-1.056.586-1.414A2 2 0 0116 10a2 2 0 012 2v1h-8v-1c0-.556.224-1.056.586-1.414A2 2 0 0112 11zm-6 4h16v5a2 2 0 01-2 2H4a2 2 0 01-2-2v-5h4zm6-10a3 3 0 100 6 3 3 0 000-6z"/>
           </svg>
           Change Password
         </a>
@@ -56,19 +50,10 @@
           class="px-4 py-2 block hover:bg-gray-700 text-sm flex items-center gap-2 border-t border-gray-700"
         >
           <!-- Sign Out Icon -->
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-4 w-4"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1m0-10V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2h6a2 2 0 002-2v-1"
-            />
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+               viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1m0-10V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2h6a2 2 0 002-2v-1"/>
           </svg>
           Sign Out
         </a>
@@ -87,14 +72,15 @@
       profileBtn.addEventListener("click", (e) => {
         e.stopPropagation();
         dropdownMenu.classList.toggle("hidden");
+
+        const expanded = profileBtn.getAttribute("aria-expanded") === "true";
+        profileBtn.setAttribute("aria-expanded", !expanded);
       });
 
       document.addEventListener("click", (e) => {
-        if (
-          !dropdownMenu.contains(e.target) &&
-          !profileBtn.contains(e.target)
-        ) {
+        if (!dropdownMenu.contains(e.target) && !profileBtn.contains(e.target)) {
           dropdownMenu.classList.add("hidden");
+          profileBtn.setAttribute("aria-expanded", "false");
         }
       });
     }

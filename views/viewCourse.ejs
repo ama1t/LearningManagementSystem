@@ -11,29 +11,29 @@
       }
   </style>
 </head>
-<body class="bg-gray-900 min-h-screen p-6 text-white">
-  <header class="bg-gray-800 p-4 rounded-xl mb-6 shadow-md flex justify-between items-center">
+<body class="bg-gray-950 min-h-screen p-6 text-white">
+  <header class="bg-gray-900 p-4 rounded-md mb-6 shadow-md flex justify-between items-center">
     <h1 class="text-2xl font-bold text-purple-500"><%= course.title %></h1>
     
     <!-- Exit Icon -->
     <a href="/dashboard" title="Exit">
-      <div class="bg-gray-700 rounded-md hover:bg-gray-900">
+      <div class="">
       <svg xmlns="http://www.w3.org/2000/svg"
            fill="none" viewBox="0 0 24 24"
            stroke-width="1.5" stroke="currentColor"
-           class="w-6 h-6 text-red-500 hover:text-red-700 transition">
+           class="w-6 h-6 text-white hover:text-gray-400 transition">
         <path stroke-linecap="round" stroke-linejoin="round"
               d="M6 18 18 6M6 6l12 12" />
       </svg>
       </div>
     </a>
   </header>
-  <div class="max-w-4xl mx-auto bg-gray-800 p-6 rounded-2xl shadow-md">
+  <div class="max-w-4xl mx-auto bg-gray-900 p-6 rounded-md shadow-md">
     <% if (chapters.length === 0) { %>
       <p class="text-gray-500">No chapters added yet.</p>
     <% } else { %>
       <div class="mb-6 flex justify-center">
-        <select id="chapterSelector" class="w-1/2 px-4 py-2 rounded-lg bg-gray-700 text-white font-semibold hover:text-purple-400 hover:bg-gray-900" onchange="showChapterPages()">
+        <select id="chapterSelector" class="w-1/2 px-4 py-2 rounded-md bg-gray-800 text-white font-semibold hover:text-purple-400 hover:bg-gray-950" onchange="showChapterPages()">
           <% chapters.forEach((chapter, index) => { %>
             <option value="chapter-<%= chapter.id %>">L<%= index + 1 %>: <%= chapter.title %></option>
           <% }) %>
@@ -46,7 +46,7 @@
         <div id="chapter-<%= chapter.id %>" class="hidden chapter-content space-y-4">
           <% if (chapterPages.length > 0) { %>
             <% chapterPages.forEach(page => { %>
-              <div class="border border-gray-600 rounded-lg p-3 bg-gray-800 text-white hover:bg-gray-900 hover:text-purple-400 transition chapter-page">
+              <div class="border border-gray-600 rounded-md p-3 bg-gray-900 text-white hover:bg-gray-950 hover:text-purple-400 transition chapter-page">
                 <div class="flex justify-between items-center">
                   <h3 class="text-lg font-semibold cursor-pointer" title="Enroll to unlock">
                     <%= page.title %>

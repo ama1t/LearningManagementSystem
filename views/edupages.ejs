@@ -6,8 +6,8 @@
     <title>Manage Pages | LMS</title>
     <script src="https://cdn.tailwindcss.com"></script>
   </head>
-  <body class="bg-gray-900 min-h-screen p-6">
-    <header class="bg-gray-800 p-4 rounded-xl mb-6 shadow-md flex justify-between items-center">
+  <body class="bg-gray-950 min-h-screen p-6">
+    <header class="bg-gray-900 p-4 rounded-md mb-6 shadow-md flex justify-between items-center">
       <h1 class="text-xl font-bold text-purple-500"><%= chapter.title %></h1>
       <% if (messages.success && messages.success.length > 0) { %>
         <span class="text-green-400 text-sm"><%= messages.success[0] %></span>
@@ -18,18 +18,18 @@
 
       <!-- Exit Icon -->
       <a href="/course/<%= chapter.courseId %>" title="Exit">
-        <div class="bg-gray-700 rounded-md hover:bg-gray-900">
+        <div class="">
         <svg xmlns="http://www.w3.org/2000/svg"
              fill="none" viewBox="0 0 24 24"
              stroke-width="1.5" stroke="currentColor"
-             class="w-6 h-6 text-red-500 hover:text-red-700 transition">
+             class="w-6 h-6 text-white transition hover:text-gray-400">
           <path stroke-linecap="round" stroke-linejoin="round"
                 d="M6 18 18 6M6 6l12 12" />
         </svg>
       </div>
       </a>
     </header> 
-    <div class="max-w-4xl mx-auto bg-gray-800 p-6 rounded-2xl shadow-md">
+    <div class="max-w-4xl mx-auto bg-gray-900 p-6 rounded-md shadow-md">
       <div class="flex justify-between items-center mb-4">
         <h1 class="text-xl font-semibold text-purple-500">Pages</h1>
       </div>
@@ -39,7 +39,7 @@
           <% } else { %>
             <ul class="space-y-4">
               <% pages.forEach((page, index) => { %>
-                <li class="bg-gray-700 p-4 rounded-xl shadow flex justify-between items-center">
+                <li class="bg-gray-800 p-4 rounded-xl shadow flex justify-between items-center">
                   <div>
                     <h2 class="text-lg font-semibold text-white">
                       <a href="/course/<%= courseId %>/chapter/<%= chapter.id %>/page/<%= page.id %>" class="hover:underline hover:text-indigo-600">
@@ -76,7 +76,7 @@
       </div>
       <a
         href="/course/<%= courseId %>/chapter/<%= chapter.id %>/page/create"
-        class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl shadow"
+        class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md shadow"
       >
         Add New Page
       </a>

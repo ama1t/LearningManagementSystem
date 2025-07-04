@@ -3,112 +3,122 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="csrf-token" content="<%= csrfToken %>" />
-    <title>Dashboard | LMS</title>
+    <title>Student Dashboard | LMS</title>
     <script src="https://cdn.tailwindcss.com"></script>
   </head>
-  <body class="bg-gray-900 text-white font-sans">
+  <body class="bg-gray-950 text-white font-sans">
     <!-- Header -->
     <%- include('header.ejs') %>
 
     <!-- Main Section -->
-    <main class="px-6 max-w-6xl mx-auto pt-24">
-      <!-- Navigation -->
-      <section class="mb-4">
+    <main class="pt-28 px-4 sm:px-6 pb-10 max-w-7xl mx-auto">
+      
+      <!-- Navigation Tabs -->
+      <section class="mb-8">
         <div class="flex flex-col sm:flex-row gap-4">
-          <a href="/mycourses" class="bg-indigo-700 hover:bg-indigo-800 px-4 py-2 rounded-md text-white">
+          <a href="/mycourses" class="bg-indigo-700 hover:bg-indigo-800 px-4 py-2 rounded-md text-center">
             My Courses
           </a>
         </div>
       </section>
-      <!-- Section Header with Search -->
-<section class="mb-6">
-  <div class="flex justify-between items-center border-b border-purple-600">
-    <!-- Navigation tab style heading -->
-    <nav class="text-lg font-semibold">
-      <span class="text-purple-400   pb-2">Available Courses</span>
-    </nav>
 
-    <!-- Search form -->
-    <form method="GET" action="/dashboard" class="flex items-center bg-gray-800 border border-gray-700 px-3 py-1.5 rounded-md focus-within:ring-2 focus-within:ring-purple-500">
-      <input
-        type="text"
-        name="q"
-        value="<%= typeof searchQuery !== 'undefined' ? searchQuery : '' %>"
-        placeholder="Search..."
-        class="bg-transparent text-white focus:outline-none placeholder-gray-400"
-      />
-      <button type="submit" class="ml-2 text-purple-400 hover:text-purple-300">
-        <!-- Custom search icon -->
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-             stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-          <path stroke-linecap="round" stroke-linejoin="round"
-                d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 
-                   5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
-        </svg>
-      </button>
-    </form>
-  </div>
-</section>
+      <!-- Available Courses + Search -->
+      <section class="mb-6">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-purple-600 pb-2">
+          <h2 class="text-lg sm:text-xl font-semibold text-purple-400">
+            Available Courses
+          </h2>
 
+          <form method="GET" action="/dashboard" class="flex items-center bg-gray-800 border border-gray-700 px-3 py-1.5 rounded-md focus-within:ring-2 focus-within:ring-purple-500">
+            <input
+              type="text"
+              name="q"
+              value="<%= typeof searchQuery !== 'undefined' ? searchQuery : '' %>"
+              placeholder="Search..."
+              class="bg-transparent text-white focus:outline-none placeholder-gray-400"
+            />
+            <button type="submit" class="ml-2 text-purple-400 hover:text-purple-300">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                   viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                   class="w-5 h-5">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                      d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 
+                         5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+              </svg>
+            </button>
+          </form>
+        </div>
+      </section>
 
-      <!-- Available Courses -->
+      <!-- Available Courses List -->
       <section>
         <% 
-          courses = courses.filter(course => 
-            !enrolledCourseIds.includes(course.id)
-          ); 
+          const studentCourses = courses.filter(course => !enrolledCourseIds.includes(course.id));
         %>
-
-        <% if (courses.length === 0) { %>
-          <p class="text-gray-400">No courses available</p>
+        <% if (studentCourses.length === 0) { %>
+          <p class="text-gray-400">No courses available.</p>
         <% } else { %>
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            <% courses.forEach(course => { %>
-              <div class="bg-gray-800 p-4 rounded-lg shadow hover:shadow-lg transition">
-                <img src="<%= course.imageUrl || '/default-course.jpg' %>" alt="Course Thumbnail"
-                     class="w-full h-40 object-cover rounded-md mb-4" />
+            <% studentCourses.forEach(course => { %>
+              <div class="bg-gray-800 p-4 rounded-lg shadow-md hover:shadow-lg transition duration-200">
+                <!-- Thumbnail -->
+                <div class="overflow-hidden rounded-md mb-4">
+                  <img src="<%= course.imageUrl || '/default-course.jpg' %>" alt="Course Thumbnail"
+                       class="w-full h-40 object-cover transition-transform duration-300 hover:scale-105" />
+                </div>
+
+                <!-- Title -->
                 <h3 class="text-lg font-semibold text-white mb-1">
                   <%= course.title %>
                 </h3>
+
+                <!-- Description -->
                 <p class="text-sm text-gray-300 mb-2">
                   <%= course.description || "No description available." %>
                 </p>
+
+                <!-- Educator -->
                 <p class="text-sm text-gray-400 mb-1">
-                  Instructor: <%= course.educator ? course.educator.name : "N/A" %>
-                </p>
-                <p class="text-sm text-gray-400 mb-4">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                       stroke-width="1.5" stroke="currentColor"
-                       class="h-6 w-6 inline-block align-middle pb-1 text-green-400">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                          d="M15 19.128a9.38 9.38 0 0 0 2.625.372
-                             9.337 9.337 0 0 0 4.121-.952
-                             4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003
-                             c0-1.113-.285-2.16-.786-3.07M15 19.128v.106
-                             A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766
-                             l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0
-                             1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1
-                             1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
-                  </svg>
-                  : <%= course.dataValues?.studentsCount || 0 %> Enrolled
+                  Instructor: <%= course.educator?.name || "N/A" %>
                 </p>
 
+                <!-- Students Count -->
+                <p class="text-sm text-gray-400 mb-4">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                       viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                       class="h-5 w-5 inline-block text-green-400 mr-1">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M15 19.128a9.38 9.38 0 0 0 2.625.372 
+                             9.337 9.337 0 0 0 4.121-.952 
+                             4.125 4.125 0 0 0-7.533-2.493 
+                             M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07 
+                             M15 19.128v.106A12.318 12.318 0 0 1 8.624 21 
+                             c-2.331 0-4.512-.645-6.374-1.766l-.001-.109 
+                             a6.375 6.375 0 0 1 11.964-3.07 
+                             M12 6.375a3.375 3.375 0 1 1-6.75 0 
+                             3.375 3.375 0 0 1 6.75 0 
+                             M20.25 8.625a2.625 2.625 0 1 1-5.25 0 
+                             2.625 2.625 0 0 1 5.25 0Z" />
+                  </svg>
+                  <%= course.dataValues?.studentsCount || 0 %> Enrolled
+                </p>
+
+                <!-- Buttons -->
                 <div class="flex gap-2">
                   <a href="/course/<%= course.id %>/view"
-                     class="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-md text-white">
+                     class="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-md text-white text-sm">
                     View
                   </a>
                   <form action="/course/<%= course.id %>/enroll" method="POST">
                     <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
                     <button type="submit"
-                            class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-md text-white">
+                            class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-md text-white text-sm">
                       Enroll
                     </button>
                   </form>
                 </div>
               </div>
-            <% }) %>
+            <% }); %>
           </div>
         <% } %>
       </section>

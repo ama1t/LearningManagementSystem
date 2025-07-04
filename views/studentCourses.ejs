@@ -1,94 +1,92 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>My Courses | LMS</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-900 text-white">
+  <head>
+    <meta charset="UTF-8" />
+    <title>My Courses | LMS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-950 text-white font-sans">
 
-  <!-- Header -->
-  <%- include('header.ejs') %>
+    <!-- Header -->
+    <%- include('header.ejs') %>
 
+    <!-- Main Section -->
+    <main class="pt-28 px-4 sm:px-6 pb-10 max-w-7xl mx-auto">
 
-  <!-- Course Grid -->
-  <main class="px-6 pt-24 max-w-6xl mx-auto">
-     <!-- Navigation -->
-     <section class="mb-6">
-      <div class="flex justify-between items-center border-b border-purple-600">
-        <!-- Navigation tab style heading -->
-        <nav class="text-lg font-semibold">
-          <span class="text-purple-400   pb-2">Enrolled Courses</span>
-        </nav>
-    
-        <!-- Search form -->
-        <form method="GET" action="/mycourses" class="flex items-center bg-gray-800 border border-gray-700 px-3 py-1.5 rounded-md focus-within:ring-2 focus-within:ring-purple-500">
-          <input
-            type="text"
-            name="q"
-            value="<%= typeof searchQuery !== 'undefined' ? searchQuery : '' %>"
-            placeholder="Search..."
-            class="bg-transparent text-white focus:outline-none placeholder-gray-400"
-          />
-          <button type="submit" class="ml-2 text-purple-400 hover:text-purple-300">
-            <!-- Custom search icon -->
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                 stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-              <path stroke-linecap="round" stroke-linejoin="round"
-                    d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 
-                       5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
-            </svg>
-          </button>
-        </form>
-      </div>
-    </section>
-    <% if (courses.length === 0) { %>
-      <p class="text-gray-400 mt-6">You're not enrolled in any courses yet.</p>
-    <% } else { %>
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
-        <% courses.forEach(course => { %>
-          <div class="bg-gray-800 p-4 rounded-lg shadow hover:shadow-lg transition">
-            <!-- Course Image (optional, if you have imageUrl field) -->
+      <!-- Section Header with Search -->
+      <section class="mb-6">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-purple-600 pb-2">
+          <!-- Heading -->
+          <h2 class="text-lg sm:text-xl font-semibold text-purple-400">
+            Enrolled Courses
+          </h2>
 
-            <img src="<%= course.imageUrl || '/default-course.jpg' %>" alt="Course Thumbnail"
-            class="w-full h-40 object-cover rounded-md mb-4" />
+          <!-- Search form -->
+          <form method="GET" action="/mycourses" class="flex items-center bg-gray-800 border border-gray-700 px-3 py-1.5 rounded-md focus-within:ring-2 focus-within:ring-purple-500">
+            <input
+              type="text"
+              name="q"
+              value="<%= typeof searchQuery !== 'undefined' ? searchQuery : '' %>"
+              placeholder="Search..."
+              class="bg-transparent text-white focus:outline-none placeholder-gray-400"
+            />
+            <button type="submit" class="ml-2 text-purple-400 hover:text-purple-300">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                   viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                   class="w-5 h-5">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                      d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 
+                         5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+              </svg>
+            </button>
+          </form>
+        </div>
+      </section>
 
-       <!-- Course Title -->
-       <h3 class="text-lg font-semibold text-white mb-1">
-         <%= course.title %>
-       </h3>
+      <!-- Course Grid -->
+      <% if (courses.length === 0) { %>
+        <p class="text-gray-400 mt-6">You're not enrolled in any courses yet.</p>
+      <% } else { %>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+          <% courses.forEach(course => { %>
+            <div class="bg-gray-800 p-4 rounded-lg shadow-md hover:shadow-lg transition duration-200">
+              <!-- Thumbnail -->
+              <div class="overflow-hidden rounded-md mb-4">
+                <img src="<%= course.imageUrl || '/default-course.jpg' %>" alt="Course Thumbnail"
+                     class="w-full h-40 object-cover transition-transform duration-300 hover:scale-105" />
+              </div>
 
-       <!-- Course Description -->
-       <p class="text-sm text-gray-300 mb-2">
-         <%= course.description || "No description available." %>
-       </p>
+              <!-- Title -->
+              <h3 class="text-lg font-semibold text-white mb-1">
+                <%= course.title %>
+              </h3>
 
-       <!-- Instructor -->
-       <p class="text-sm text-gray-400 mb-1">
-         Instructor :  <%= course.educator.name || "N/A" %>
-       </p>
+              <!-- Description -->
+              <p class="text-sm text-gray-300 mb-2">
+                <%= course.description || "No description available." %>
+              </p>
 
-            <!-- View Button and Progress -->
-            <div class="flex justify-between items-center mt-4">
-              <!-- View Course Button -->
-              <a href="/mycourses/<%= course.id %>" class="bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-md text-white inline-block">
-                View Course
-              </a>
-            
-              <!-- Progress Section -->
-              <div class="w-1/2 ml-4">
-                <p class="text-sm text-gray-300 mb-1 font-semibold text-center">Progress</p>
-                <p class="text-sm text-green-400 text-center font-medium"><%= course.progress %>%</p>
+              <!-- Instructor -->
+              <p class="text-sm text-gray-400 mb-1">
+                Instructor: <%= course.educator?.name || "N/A" %>
+              </p>
+
+              <!-- Bottom Row: View + Progress -->
+              <div class="flex justify-between items-center mt-4">
+                <a href="/mycourses/<%= course.id %>" class="bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-md text-white text-sm">
+                  View Course
+                </a>
+
+                <div class="w-1/2 ml-4 text-center">
+                  <p class="text-sm text-gray-300 font-semibold">Progress</p>
+                  <p class="text-sm text-green-400 font-medium"><%= course.progress %>%</p>
+                </div>
               </div>
             </div>
-            
-
-          </div>
-          
-        <% }); %>
-      </div>
-    <% } %>
-  </main>
-
-</body>
+          <% }); %>
+        </div>
+      <% } %>
+    </main>
+  </body>
 </html>
