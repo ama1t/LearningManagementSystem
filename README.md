@@ -36,7 +36,7 @@ A fully functional Learning Management System where educators can create courses
 
 ## Demo
 
-> Live url: [amals-lms.onrender.com](https://amals-lms.onrender.com)
+> Live url: [amals-lms.onrender.com](https://learningmanagementsystem-inul.onrender.com/)
 > 
 > Demo vedio: [watch](https://www.loom.com/share/d10f8932f12b469caa324c39199e902b?sid=2ee42e0d-2d7b-49fa-be58-93c5bf3a6c39)
 
